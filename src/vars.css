@@ -1,0 +1,10 @@
+:root {
+    /* Layout vars */
+    --header-height: 10vh;
+    --footer-height: 5vh;
+    --main-height: 85vh;
+
+    --header-width: 100%;
+    --footer-width: 100%;
+    --main-width: 100%;
+}
