@@ -1,0 +1,7 @@
+.icon-wrapper {
+  transition: all 0.2s ease;
+}
+
+.icon-wrapper:hover {
+  transform: scale(1.1);
+}
