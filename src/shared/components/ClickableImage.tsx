@@ -10,6 +10,7 @@ export type ClickableImageConfig = {
   borderRadius?: string;
   className?: string;
   debugColor?: boolean;
+  onClick?: ()=>void;
 };
 
 const ClickableImage = ({
@@ -20,12 +21,14 @@ const ClickableImage = ({
   height = "200px",
   borderRadius = "8px",
   className = "",
-  debugColor = false
+  debugColor = false,
+  onClick
 }: ClickableImageConfig) => {
   const styleClasses = [
     "clickable-image-button",
     !url ? "skeleton" : "",
     debugColor ? "debug-color": "",
+    !onClick ? "pointer-none": "",
     className,
   ]
     .filter(Boolean)
@@ -34,6 +37,7 @@ const ClickableImage = ({
   return (
     <button
       className={styleClasses}
+      onClick={onClick}
       style={{ width, height, borderRadius }}
     >
       {url && (

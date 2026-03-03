@@ -10,6 +10,10 @@
   background-color: blue !important;
 }
 
+.pointer-none{
+  cursor: default !important;
+}
+
 button {
   outline: none;
   border: none;
