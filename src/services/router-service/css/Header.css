@@ -6,6 +6,11 @@ header {
     height: var(--header-height);
     display: flex;
     align-items: center;
-    justify-content: center;
-    background-color: red;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+}
+
+.header-icon {
+    height: 40px;
+    width: 40px;
 }

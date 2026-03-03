@@ -5,3 +5,23 @@
   text-align: center;
   margin: 0;
 }
+
+.debug-color{
+  background-color: blue !important;
+}
+
+.pointer-none{
+  cursor: default !important;
+}
+
+button {
+  outline: none;
+  border: none;
+  background: none; 
+  cursor: pointer;
+}
+
+button:focus {
+  outline: none;
+  box-shadow: none;
+}

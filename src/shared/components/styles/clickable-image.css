@@ -1,0 +1,27 @@
+.clickable-image-button {
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+  background: transparent;
+}
+
+.clickable-image-button img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .clickable-image-button {
+    height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .clickable-image-button {
+    height: 120px;
+  }
+}
