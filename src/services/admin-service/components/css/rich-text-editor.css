@@ -1,0 +1,93 @@
+.rich-text-editor-wrapper {
+  margin: 8px 0;
+}
+
+.rich-text-editor-wrapper .quill {
+  background-color: var(--color-background);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.rich-text-editor-wrapper .ql-toolbar {
+  background-color: var(--color-background);
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 8px 8px 0 0;
+}
+
+.rich-text-editor-wrapper .ql-container {
+  border: none;
+  font-family: var(--font-family);
+  font-size: 1rem;
+  min-height: 200px;
+}
+
+.rich-text-editor-wrapper .ql-editor {
+  color: var(--color-text);
+  min-height: 200px;
+}
+
+.rich-text-editor-wrapper .ql-editor.ql-blank::before {
+  color: var(--color-gray-500);
+  font-style: normal;
+}
+
+.rich-text-editor-wrapper .ql-stroke {
+  stroke: var(--color-text);
+}
+
+.rich-text-editor-wrapper .ql-fill {
+  fill: var(--color-text);
+}
+
+.rich-text-editor-wrapper .ql-picker-label {
+  color: var(--color-text);
+}
+
+.rich-text-editor-wrapper .ql-picker-options {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+}
+
+.rich-text-editor-wrapper .ql-picker-item {
+  color: var(--color-text);
+}
+
+.rich-text-editor-wrapper .ql-picker-item:hover {
+  background-color: var(--color-gray-100);
+}
+
+.rich-text-editor-wrapper .ql-toolbar button:hover,
+.rich-text-editor-wrapper .ql-toolbar button:focus {
+  color: var(--color-primary);
+}
+
+.rich-text-editor-wrapper .ql-toolbar button:hover .ql-stroke,
+.rich-text-editor-wrapper .ql-toolbar button:focus .ql-stroke {
+  stroke: var(--color-primary);
+}
+
+.rich-text-editor-wrapper .ql-toolbar button:hover .ql-fill,
+.rich-text-editor-wrapper .ql-toolbar button:focus .ql-fill {
+  fill: var(--color-primary);
+}
+
+.rich-text-editor-wrapper .ql-toolbar button.ql-active {
+  color: var(--color-primary);
+}
+
+.rich-text-editor-wrapper .ql-toolbar button.ql-active .ql-stroke {
+  stroke: var(--color-primary);
+}
+
+.rich-text-editor-wrapper .ql-toolbar button.ql-active .ql-fill {
+  fill: var(--color-primary);
+}
+
+[data-theme='dark'] .rich-text-editor-wrapper .ql-picker-item:hover {
+  background-color: var(--color-gray-800);
+}
+
+[data-theme='dark'] .rich-text-editor-wrapper .ql-editor a {
+  color: var(--color-primary);
+}

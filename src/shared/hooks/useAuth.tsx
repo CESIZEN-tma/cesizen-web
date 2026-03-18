@@ -64,6 +64,14 @@ export function useAuth() {
         localStorage.setItem(TOKEN_KEY, accessToken);
         localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
         setIsLoggedIn(true);
+
+        try {
+          const decoded = jwtDecode<JwtPayload>(accessToken);
+          setIsAdmin(decoded.role === 'Administrator');
+        } catch {
+          setIsAdmin(false);
+        }
+
         return true;
       } catch (error) {
         console.error("Erreur lors de la connexion:", error);

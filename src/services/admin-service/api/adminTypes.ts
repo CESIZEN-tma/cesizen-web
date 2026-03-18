@@ -118,6 +118,21 @@ export interface QuizzDto {
 export interface CreateQuizzDto {
   nom: string;
   active: boolean;
+  questions?: CreateQuestionForQuizDto[];
+}
+
+export interface CreateQuestionForQuizDto {
+  text: string;
+  position: number;
+  options?: CreateResponseOptionForQuestionDto[];
+}
+
+export interface CreateResponseOptionForQuestionDto {
+  label: string;
+  position: number;
+  targetedField: string;
+  operation: string;
+  value: string;
 }
 
 export interface QuestionDto {
