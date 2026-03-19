@@ -112,6 +112,7 @@ export interface QuizzDto {
   id: string;
   nom: string;
   active: boolean;
+  questionCount: number;
   questions?: QuestionDto[];
 }
 

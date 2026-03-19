@@ -84,11 +84,10 @@ const Quizzes: React.FC = () => {
     },
     {
       label: 'Questions',
-      key: 'questions',
-      render: (value: any) => {
-        const count = Array.isArray(value) ? value.length : 0;
-        return <Badge variant="default">{count} questions</Badge>;
-      },
+      key: 'questionCount',
+      render: (value: number) => (
+        <Badge variant="default">{value ?? 0} questions</Badge>
+      ),
     },
     {
       label: 'Status',
