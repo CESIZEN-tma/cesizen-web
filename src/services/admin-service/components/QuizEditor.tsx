@@ -214,13 +214,21 @@ const SortableOption: React.FC<SortableOptionProps> = ({ option, onUpdate, onDel
           required
         />
 
-        <Input
-          type="text"
+        <Select
           value={option.targetedField}
           onChange={(e) => onUpdate({ targetedField: e.target.value })}
-          placeholder="Targeted field"
           required
-        />
+        >
+          <option value="">Select field</option>
+          <option value="inhalation">Inhalation</option>
+          <option value="retention1">Retention 1</option>
+          <option value="exhalation">Exhalation</option>
+          <option value="retention2">Retention 2</option>
+          <option value="durationMinutes">Duration (minutes)</option>
+          <option value="difficulty">Difficulty</option>
+          <option value="objective">Objective</option>
+          <option value="guidanceType">Guidance type</option>
+        </Select>
 
         <Select
           value={option.operation}
