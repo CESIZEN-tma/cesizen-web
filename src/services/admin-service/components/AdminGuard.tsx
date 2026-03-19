@@ -6,7 +6,7 @@ interface AdminGuardProps {
   children: React.ReactNode;
 }
 
-export const AdminGuard: React.FC<AdminGuardProps> = ({ children }) => {
+const AdminGuard: React.FC<AdminGuardProps> = ({ children }) => {
   const { isLoggedIn, isAdmin, loading } = useAuth();
 
   if (loading) {
@@ -28,3 +28,6 @@ export const AdminGuard: React.FC<AdminGuardProps> = ({ children }) => {
 
   return <>{children}</>;
 };
+
+
+export default AdminGuard;

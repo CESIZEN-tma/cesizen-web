@@ -1,6 +1,6 @@
 import React from 'react';
 import type { IconType } from 'react-icons';
-import { Icon } from './Icon';
+import Icon from '../../shared/components/Icon';
 import './styles/empty-state.css';
 
 interface EmptyStateProps {

@@ -17,10 +17,10 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Button } from '../../../shared/components/Button';
-import { Icon } from '../../../shared/components/Icon';
 import { MdDragHandle, MdEdit, MdDelete } from 'react-icons/md';
 import type { NavigationMenuDto } from '../api/adminTypes';
 import './css/menu-builder.css';
+import Icon from '../../../shared/components/Icon';
 
 interface MenuBuilderProps {
   menus: NavigationMenuDto[];

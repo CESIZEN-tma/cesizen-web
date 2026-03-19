@@ -58,6 +58,18 @@ export function useQuizzes() {
     }
   }, [fetchAll]);
 
+  const updateFull = useCallback(async (id: string, dto: CreateQuizzDto) => {
+    try {
+      await adminApi.quizzes.updateFull(id, dto);
+      showSuccess('Quiz updated successfully');
+      await fetchAll();
+    } catch (err: any) {
+      const message = err.response?.data?.error || 'Failed to update quiz';
+      showError(message);
+      throw err;
+    }
+  }, [fetchAll]);
+
   const deleteQuiz = useCallback(async (id: string) => {
     try {
       await adminApi.quizzes.delete(id);
@@ -80,6 +92,7 @@ export function useQuizzes() {
     error,
     create,
     update,
+    updateFull,
     delete: deleteQuiz,
     fetchById,
     refresh: fetchAll,

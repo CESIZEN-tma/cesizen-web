@@ -25,10 +25,8 @@ interface JwtPayload {
 export function useAuth() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
-
-  // Vérifier si l'utilisateur est connecté au chargement
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
@@ -44,6 +42,7 @@ export function useAuth() {
       setIsLoggedIn(false);
       setIsAdmin(false);
     }
+    setLoading(false);
   }, []);
 
   // Connexion
@@ -51,13 +50,14 @@ export function useAuth() {
     async (credentials: LoginCredentials): Promise<boolean> => {
       try {
         setLoading(true);
+        console.log("1")
 
-        const response = await apiClient.post<LoginResponse>("/admin/login", {
+        const response = await apiClient.post<LoginResponse>("/admin/login/web", {
           email: credentials.email,
           password: credentials.password,
           device_info: "web",
         });
-
+        console.log("2")
         const { accessToken, refreshToken } = response.data;
 
         // Stocker les tokens

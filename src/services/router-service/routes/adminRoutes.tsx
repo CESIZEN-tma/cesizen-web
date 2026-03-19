@@ -1,8 +1,8 @@
 import React, { Suspense, lazy } from 'react';
 import AdminLayout from '../../admin-service/components/AdminLayout';
-import AdminGuard from '../../admin-service/components/AdminGuard';
 import { Spinner } from '../../../shared/components/Spinner';
 import type { RouteConfig } from '../types';
+import AdminGuard from '../../admin-service/components/AdminGuard';
 
 const Dashboard = lazy(() => import('../../../pages/admin/Dashboard'));
 const Administrators = lazy(() => import('../../../pages/admin/Administrators'));

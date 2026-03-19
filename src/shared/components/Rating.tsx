@@ -1,6 +1,6 @@
 import React from 'react';
 import { MdStar, MdStarBorder } from 'react-icons/md';
-import { Icon } from './Icon';
+import Icon from '../../shared/components/Icon';
 import './styles/rating.css';
 
 interface RatingProps {

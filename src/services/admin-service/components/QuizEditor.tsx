@@ -19,7 +19,6 @@ import { CSS } from '@dnd-kit/utilities';
 import { Button } from '../../../shared/components/Button';
 import { Input } from '../../../shared/components/Input';
 import { Select } from '../../../shared/components/Select';
-import { Icon } from '../../../shared/components/Icon';
 import { MdDragHandle, MdDelete, MdAdd, MdExpandMore, MdExpandLess } from 'react-icons/md';
 import type {
   CreateQuizzDto,
@@ -27,6 +26,7 @@ import type {
   CreateResponseOptionForQuestionDto,
 } from '../api/adminTypes';
 import './css/quiz-editor.css';
+import Icon from '../../../shared/components/Icon';
 
 interface QuizEditorProps {
   initialData?: CreateQuizzDto;
@@ -34,9 +34,10 @@ interface QuizEditorProps {
   onCancel: () => void;
 }
 
-interface TempQuestion extends CreateQuestionForQuizDto {
+interface TempQuestion extends Omit<CreateQuestionForQuizDto, 'options'> {
   tempId: string;
   expanded: boolean;
+  options?: TempOption[];
 }
 
 interface TempOption extends CreateResponseOptionForQuestionDto {

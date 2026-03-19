@@ -6,28 +6,46 @@ import { Modal } from '../../shared/components/Modal';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { Button } from '../../shared/components/Button';
 import { Badge } from '../../shared/components/Badge';
-import { MdQuiz, MdEdit, MdDelete, MdAdd, MdVisibility } from 'react-icons/md';
+import { MdQuiz, MdEdit, MdDelete, MdAdd } from 'react-icons/md';
 import type { QuizzDto, CreateQuizzDto } from '../../services/admin-service/api/adminTypes';
 
 const Quizzes: React.FC = () => {
-  const { quizzes, loading, create, delete: deleteQuiz, fetchById } = useQuizzes();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const { quizzes, loading, create, updateFull, delete: deleteQuiz, fetchById } = useQuizzes();
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedQuiz, setSelectedQuiz] = useState<QuizzDto | null>(null);
-  const [quizDetails, setQuizDetails] = useState<QuizzDto | null>(null);
+  const [editorInitialData, setEditorInitialData] = useState<CreateQuizzDto | undefined>(undefined);
+  const [editorLoading, setEditorLoading] = useState(false);
 
   const handleCreate = () => {
     setSelectedQuiz(null);
-    setIsCreateModalOpen(true);
+    setEditorInitialData(undefined);
+    setIsEditorOpen(true);
   };
 
-  const handleView = async (quiz: QuizzDto) => {
+  const handleEdit = async (quiz: QuizzDto) => {
+    setEditorLoading(true);
     const details = await fetchById(quiz.id);
     if (details) {
-      setQuizDetails(details);
-      setIsViewModalOpen(true);
+      setSelectedQuiz(quiz);
+      setEditorInitialData({
+        nom: details.nom,
+        active: details.active,
+        questions: (details.questions ?? []).map((q) => ({
+          text: q.text,
+          position: q.position,
+          options: (q.responsesOptions ?? []).map((o) => ({
+            label: o.label,
+            position: o.position,
+            targetedField: o.targetedField,
+            operation: o.operation,
+            value: o.value,
+          })),
+        })),
+      });
+      setIsEditorOpen(true);
     }
+    setEditorLoading(false);
   };
 
   const handleDelete = (quiz: QuizzDto) => {
@@ -37,10 +55,13 @@ const Quizzes: React.FC = () => {
 
   const handleSave = async (quizData: CreateQuizzDto) => {
     try {
-      await create(quizData);
-      setIsCreateModalOpen(false);
+      if (selectedQuiz) {
+        await updateFull(selectedQuiz.id, quizData);
+      } else {
+        await create(quizData);
+      }
+      setIsEditorOpen(false);
     } catch (err) {
-      // Error handled by hook
       throw err;
     }
   };
@@ -84,15 +105,11 @@ const Quizzes: React.FC = () => {
     <div className="admin-page">
       <div className="admin-page-header">
         <h1>Quizzes</h1>
-        <Button variant="primary" icon={MdAdd} onClick={handleCreate}>
-          Create Quiz
-        </Button>
-      </div>
-
-      <div style={{ marginBottom: '16px', padding: '12px', backgroundColor: 'var(--color-gray-100)', borderRadius: '8px' }}>
-        <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-gray-700)' }}>
-          <strong>Note:</strong> Quizzes can only be fully created or deleted. To modify questions or options, you'll need to delete and recreate the quiz.
-        </p>
+        {!loading && quizzes.length > 0 && (
+          <Button variant="primary" icon={MdAdd} onClick={handleCreate}>
+            Create Quiz
+          </Button>
+        )}
       </div>
 
       <DataTable
@@ -112,10 +129,11 @@ const Quizzes: React.FC = () => {
             <Button
               variant="secondary"
               size="small"
-              icon={MdVisibility}
-              onClick={() => handleView(quiz)}
+              icon={MdEdit}
+              loading={editorLoading && selectedQuiz?.id === quiz.id}
+              onClick={() => handleEdit(quiz)}
             >
-              View Details
+              Edit
             </Button>
             <Button
               variant="danger"
@@ -130,91 +148,17 @@ const Quizzes: React.FC = () => {
       />
 
       <Modal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        title="Create Quiz"
+        isOpen={isEditorOpen}
+        onClose={() => setIsEditorOpen(false)}
+        title={selectedQuiz ? `Edit Quiz — ${selectedQuiz.nom}` : 'Create Quiz'}
         size="large"
       >
         <QuizEditor
+          key={selectedQuiz?.id ?? 'new'}
+          initialData={editorInitialData}
           onSave={handleSave}
-          onCancel={() => setIsCreateModalOpen(false)}
+          onCancel={() => setIsEditorOpen(false)}
         />
-      </Modal>
-
-      <Modal
-        isOpen={isViewModalOpen}
-        onClose={() => setIsViewModalOpen(false)}
-        title={quizDetails?.nom || 'Quiz Details'}
-        size="large"
-      >
-        {quizDetails && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <div>
-              <p><strong>Name:</strong> {quizDetails.nom}</p>
-              <p>
-                <strong>Status:</strong>{' '}
-                <Badge variant={quizDetails.active ? 'success' : 'default'}>
-                  {quizDetails.active ? 'Active' : 'Inactive'}
-                </Badge>
-              </p>
-            </div>
-
-            <div>
-              <h3 style={{ marginBottom: '16px' }}>Questions ({quizDetails.questions?.length || 0})</h3>
-              {!quizDetails.questions || quizDetails.questions.length === 0 ? (
-                <p style={{ color: 'var(--color-gray-600)' }}>No questions in this quiz.</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  {quizDetails.questions.map((question, idx) => (
-                    <div
-                      key={question.id}
-                      style={{
-                        padding: '16px',
-                        border: '1px solid var(--color-border)',
-                        borderRadius: '8px',
-                        backgroundColor: 'var(--color-background)',
-                      }}
-                    >
-                      <p style={{ fontWeight: 600, marginBottom: '8px' }}>
-                        {idx + 1}. {question.text}
-                      </p>
-
-                      {question.responsesOptions && question.responsesOptions.length > 0 && (
-                        <div style={{ marginTop: '12px', paddingLeft: '16px' }}>
-                          <p style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: '8px' }}>
-                            Response Options:
-                          </p>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {question.responsesOptions.map((option, oidx) => (
-                              <div
-                                key={option.id}
-                                style={{
-                                  padding: '8px 12px',
-                                  backgroundColor: 'var(--color-gray-50)',
-                                  borderRadius: '4px',
-                                  fontSize: '0.875rem',
-                                }}
-                              >
-                                <span style={{ fontWeight: 500 }}>{oidx + 1}. {option.label}</span>
-                                <span style={{ color: 'var(--color-gray-600)', marginLeft: '8px' }}>
-                                  ({option.operation} {option.value} to {option.targetedField})
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <Button variant="secondary" onClick={() => setIsViewModalOpen(false)}>
-              Close
-            </Button>
-          </div>
-        )}
       </Modal>
 
       <ConfirmDialog

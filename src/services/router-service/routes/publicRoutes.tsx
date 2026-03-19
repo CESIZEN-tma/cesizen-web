@@ -1,6 +1,7 @@
 import Home from "../../../pages/Home";
 import Login from "../../../pages/Login";
 import NotFound from "../../../pages/NotFound";
+import AuthGuard from "../../../shared/components/AuthGuard";
 import type { RouteConfig } from "../types";
 
 export const publicRoutes: RouteConfig[] = [
@@ -10,7 +11,7 @@ export const publicRoutes: RouteConfig[] = [
     layout: "default",
     header: true,
     footer: true,
-    component: <Home />,
+    component: <AuthGuard><Home /></AuthGuard>,
   },
   {
     name: "login",

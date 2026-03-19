@@ -85,6 +85,8 @@ export const adminApi = {
     create: (dto: CreateQuizzDto) => apiClient.post(ADMIN_ENDPOINTS.quizzes, dto),
     update: (id: string, dto: Partial<CreateQuizzDto>) =>
       apiClient.put(`${ADMIN_ENDPOINTS.quizzes}/${id}`, dto),
+    updateFull: (id: string, dto: CreateQuizzDto) =>
+      apiClient.put(`${ADMIN_ENDPOINTS.quizzes}/${id}/full`, dto),
     delete: (id: string) => apiClient.delete(`${ADMIN_ENDPOINTS.quizzes}/${id}`),
   },
 

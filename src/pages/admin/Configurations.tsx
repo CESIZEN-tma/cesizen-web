@@ -133,9 +133,11 @@ const Configurations: React.FC = () => {
     <div className="admin-page">
       <div className="admin-page-header">
         <h1>Configurations</h1>
-        <Button variant="primary" icon={MdAdd} onClick={handleOpenCreate}>
-          Create Configuration
-        </Button>
+        {!loading && configurations.length > 0 && (
+          <Button variant="primary" icon={MdAdd} onClick={handleOpenCreate}>
+            Create Configuration
+          </Button>
+        )}
       </div>
 
       <DataTable

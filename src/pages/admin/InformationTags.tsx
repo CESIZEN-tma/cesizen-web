@@ -82,9 +82,11 @@ const InformationTags: React.FC = () => {
     <div className="admin-page">
       <div className="admin-page-header">
         <h1>Information Tags</h1>
-        <Button variant="primary" icon={MdAdd} onClick={handleOpenCreate}>
-          Create Tag
-        </Button>
+        {!loading && tags.length > 0 && (
+          <Button variant="primary" icon={MdAdd} onClick={handleOpenCreate}>
+            Create Tag
+          </Button>
+        )}
       </div>
 
       <DataTable

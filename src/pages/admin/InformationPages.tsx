@@ -144,9 +144,11 @@ const InformationPages: React.FC = () => {
     <div className="admin-page">
       <div className="admin-page-header">
         <h1>Information Pages</h1>
-        <Button variant="primary" icon={MdAdd} onClick={handleCreate}>
-          Create Page
-        </Button>
+        {!loading && pages.length > 0 && (
+          <Button variant="primary" icon={MdAdd} onClick={handleCreate}>
+            Create Page
+          </Button>
+        )}
       </div>
 
       <DataTable

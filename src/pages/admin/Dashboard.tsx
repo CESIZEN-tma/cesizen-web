@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../../shared/components/Card';
 import { Spinner } from '../../shared/components/Spinner';
-import { Icon } from '../../shared/components/Icon';
 import { adminApi } from '../../services/admin-service/api/adminApi';
 import {
   MdPeople,
@@ -15,6 +14,7 @@ import {
   MdArrowForward,
 } from 'react-icons/md';
 import '../../services/admin-service/css/dashboard.css';
+import Icon from '../../shared/components/Icon';
 
 interface Stats {
   users: number;
