@@ -22,25 +22,28 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    const isRefreshCall = originalRequest.url?.includes('/api/admin/refresh-token');
+    const isRefreshCall = originalRequest.url?.includes('/admin/refresh-token');
     if (error.response?.status === 401 && !originalRequest._retry && !isRefreshCall) {
       originalRequest._retry = true;
 
 
 
       try {
+        console.debug('[Auth] Access token expired, attempting refresh...');
         const response = await axios.post(
-          `${API_URL}/api/admin/refresh-token`,
+          `${API_URL}/admin/refresh-token`,
           {},
           { headers: { 'x-api-key': API_KEY }, withCredentials: true }
         );
 
         const { accessToken } = response.data;
+        console.debug('[Auth] Token refreshed successfully');
         localStorage.setItem(TOKEN_KEY, accessToken);
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
         return apiClient(originalRequest);
-      } catch {
+      } catch (refreshError: any) {
+        console.error('[Auth] Refresh failed:', refreshError?.response?.status, refreshError?.response?.data);
         localStorage.removeItem(TOKEN_KEY);
         window.location.href = '/login';
         return Promise.reject(error);
