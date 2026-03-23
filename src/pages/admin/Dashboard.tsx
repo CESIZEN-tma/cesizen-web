@@ -1,5 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Legend,
+} from 'recharts';
 import { Spinner } from '../../shared/components/Spinner';
 import { adminApi } from '../../services/admin-service/api/adminApi';
 import {
@@ -9,15 +21,17 @@ import {
   MdSettings,
   MdQuiz,
   MdArrowForward,
-  MdDevices,
   MdLabel,
   MdMenu,
   MdShield,
   MdCheckCircle,
+  MdDashboard,
+  MdBarChart,
 } from 'react-icons/md';
 import '../../services/admin-service/css/dashboard.css';
 import Icon from '../../shared/components/Icon';
-import type { AdminLogDto, GetUserDto } from '../../services/admin-service/api/adminTypes';
+import { useCurrentTheme } from '../../shared/hooks/useTheme';
+import type { AdminLogDto, GetUserDto, ConfigurationDto } from '../../services/admin-service/api/adminTypes';
 
 interface DashboardData {
   totalUsers: number;
@@ -32,6 +46,8 @@ interface DashboardData {
   totalQuizzes: number;
   activeQuizzes: number;
   recentLogs: AdminLogDto[];
+  allUsers: GetUserDto[];
+  allConfigurations: ConfigurationDto[];
 }
 
 const ACTION_COLORS: Record<string, string> = {
@@ -62,10 +78,52 @@ function formatRelativeTime(dateStr: string): string {
   return `${days}d ago`;
 }
 
+function buildDailyTimeline(dates: string[], days: number): { date: string; count: number }[] {
+  const now = new Date();
+  const result: { date: string; count: number }[] = [];
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const label = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+    const key = d.toISOString().slice(0, 10);
+    const count = dates.filter((iso) => iso.slice(0, 10) === key).length;
+    result.push({ date: label, count });
+  }
+
+  return result;
+}
+
+function buildCombinedTimeline(
+  userDates: string[],
+  configDates: string[],
+  days: number,
+): { date: string; users: number; configurations: number }[] {
+  const now = new Date();
+  const result: { date: string; users: number; configurations: number }[] = [];
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const label = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
+    const key = d.toISOString().slice(0, 10);
+    result.push({
+      date: label,
+      users: userDates.filter((iso) => iso.slice(0, 10) === key).length,
+      configurations: configDates.filter((iso) => iso.slice(0, 10) === key).length,
+    });
+  }
+
+  return result;
+}
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const theme = useCurrentTheme();
+  const [activeTab, setActiveTab] = useState<'overview' | 'analytics'>('overview');
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [range, setRange] = useState<14 | 30 | 90>(30);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,6 +158,8 @@ const Dashboard: React.FC = () => {
           recentLogs: logList
             .sort((a, b) => new Date(b.creationTime).getTime() - new Date(a.creationTime).getTime())
             .slice(0, 8),
+          allUsers: userList,
+          allConfigurations: configs.data,
         });
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
@@ -121,6 +181,21 @@ const Dashboard: React.FC = () => {
 
   if (!data) return null;
 
+  const gridColor = theme === 'dark' ? '#374151' : '#e5e7eb';
+  const textColor = theme === 'dark' ? '#9ca3af' : '#6b7280';
+  const tooltipBg = theme === 'dark' ? '#1f2937' : '#ffffff';
+  const tooltipBorder = theme === 'dark' ? '#374151' : '#e5e7eb';
+
+  const userDates = data.allUsers.map((u) => u.memberSince);
+  const configDates = data.allConfigurations.map((c) => c.creationTime);
+
+  const registrationsData = buildDailyTimeline(userDates, range);
+  const configurationsData = buildDailyTimeline(configDates, range);
+  const combinedData = buildCombinedTimeline(userDates, configDates, range);
+
+  const totalRegistrationsInRange = registrationsData.reduce((s, d) => s + d.count, 0);
+  const totalConfigsInRange = configurationsData.reduce((s, d) => s + d.count, 0);
+
   const userActivationRate = data.totalUsers > 0
     ? Math.round((data.activeUsers / data.totalUsers) * 100)
     : 0;
@@ -137,11 +212,31 @@ const Dashboard: React.FC = () => {
     <div className="admin-page">
       <div className="dashboard">
 
-        {/* Header */}
+        {/* Header + tabs */}
         <div className="dashboard-header">
-          <h1>Dashboard</h1>
-          <p className="dashboard-subtitle">Overview of your CesiZen platform</p>
+          <div>
+            <h1>Dashboard</h1>
+            <p className="dashboard-subtitle">Overview of your CesiZen platform</p>
+          </div>
+          <div className="dashboard-tabs">
+            <button
+              className={`dashboard-tab ${activeTab === 'overview' ? 'active' : ''}`}
+              onClick={() => setActiveTab('overview')}
+            >
+              <Icon icon={MdDashboard} size={16} />
+              Overview
+            </button>
+            <button
+              className={`dashboard-tab ${activeTab === 'analytics' ? 'active' : ''}`}
+              onClick={() => setActiveTab('analytics')}
+            >
+              <Icon icon={MdBarChart} size={16} />
+              Analytics
+            </button>
+          </div>
         </div>
+
+        {activeTab === 'overview' && <>
 
         {/* Primary KPIs */}
         <div>
@@ -356,6 +451,147 @@ const Dashboard: React.FC = () => {
           </div>
 
         </div>
+
+        </>}
+
+        {activeTab === 'analytics' && (
+          <div className="analytics-tab">
+
+            {/* Range selector */}
+            <div className="analytics-controls">
+              <p className="dashboard-section-title" style={{ margin: 0 }}>Growth over time</p>
+              <div className="range-selector">
+                {([14, 30, 90] as const).map((r) => (
+                  <button
+                    key={r}
+                    className={`range-btn ${range === r ? 'active' : ''}`}
+                    onClick={() => setRange(r)}
+                  >
+                    {r}d
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Summary row */}
+            <div className="analytics-summary">
+              <div className="analytics-summary-card">
+                <div className="analytics-summary-value" style={{ color: '#58cc02' }}>
+                  +{totalRegistrationsInRange}
+                </div>
+                <div className="analytics-summary-label">New users in {range} days</div>
+              </div>
+              <div className="analytics-summary-card">
+                <div className="analytics-summary-value" style={{ color: '#1cb0f6' }}>
+                  +{totalConfigsInRange}
+                </div>
+                <div className="analytics-summary-label">Configurations in {range} days</div>
+              </div>
+              <div className="analytics-summary-card">
+                <div className="analytics-summary-value" style={{ color: '#ce82ff' }}>
+                  {data.totalUsers}
+                </div>
+                <div className="analytics-summary-label">Total users</div>
+              </div>
+              <div className="analytics-summary-card">
+                <div className="analytics-summary-value" style={{ color: '#ff9600' }}>
+                  {data.totalConfigurations}
+                </div>
+                <div className="analytics-summary-label">Total configurations</div>
+              </div>
+            </div>
+
+            {/* User registrations chart */}
+            <div className="chart-card">
+              <div className="chart-card-header">
+                <h3>User registrations per day</h3>
+                <span className="chart-badge" style={{ background: 'rgba(88,204,2,0.12)', color: '#3d9900' }}>
+                  {totalRegistrationsInRange} over {range}d
+                </span>
+              </div>
+              <div className="chart-body">
+                <ResponsiveContainer width="100%" height={240}>
+                  <AreaChart data={registrationsData} margin={{ top: 8, right: 16, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#58cc02" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#58cc02" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                    <XAxis dataKey="date" tick={{ fill: textColor, fontSize: 11 }} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fill: textColor, fontSize: 11 }} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 13 }}
+                      labelStyle={{ color: textColor }}
+                      formatter={(v: number) => [v, 'Registrations']}
+                    />
+                    <Area type="monotone" dataKey="count" stroke="#58cc02" strokeWidth={2} fill="url(#colorUsers)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Configurations chart */}
+            <div className="chart-card">
+              <div className="chart-card-header">
+                <h3>Configurations created per day</h3>
+                <span className="chart-badge" style={{ background: 'rgba(28,176,246,0.12)', color: '#0077bb' }}>
+                  {totalConfigsInRange} over {range}d
+                </span>
+              </div>
+              <div className="chart-body">
+                <ResponsiveContainer width="100%" height={240}>
+                  <AreaChart data={configurationsData} margin={{ top: 8, right: 16, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorConfigs" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#1cb0f6" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#1cb0f6" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                    <XAxis dataKey="date" tick={{ fill: textColor, fontSize: 11 }} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fill: textColor, fontSize: 11 }} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 13 }}
+                      labelStyle={{ color: textColor }}
+                      formatter={(v: number) => [v, 'Configurations']}
+                    />
+                    <Area type="monotone" dataKey="count" stroke="#1cb0f6" strokeWidth={2} fill="url(#colorConfigs)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Combined bar chart */}
+            <div className="chart-card">
+              <div className="chart-card-header">
+                <h3>Users vs Configurations</h3>
+                <span className="chart-badge" style={{ background: 'rgba(206,130,255,0.12)', color: '#8800cc' }}>
+                  Combined view
+                </span>
+              </div>
+              <div className="chart-body">
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={combinedData} margin={{ top: 8, right: 16, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+                    <XAxis dataKey="date" tick={{ fill: textColor, fontSize: 11 }} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fill: textColor, fontSize: 11 }} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 13 }}
+                      labelStyle={{ color: textColor }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 13, color: textColor }} />
+                    <Bar dataKey="users" name="Registrations" fill="#58cc02" radius={[4, 4, 0, 0]} maxBarSize={20} />
+                    <Bar dataKey="configurations" name="Configurations" fill="#1cb0f6" radius={[4, 4, 0, 0]} maxBarSize={20} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+          </div>
+        )}
+
       </div>
     </div>
   );
