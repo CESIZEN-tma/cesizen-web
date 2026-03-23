@@ -94,6 +94,7 @@ export interface ConfigurationDto {
   difficulty: number;
   objective: string;
   guidanceType: string;
+  creationTime: string;
 }
 
 export interface CreateConfigurationDto {

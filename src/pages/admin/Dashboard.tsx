@@ -78,6 +78,14 @@ function formatRelativeTime(dateStr: string): string {
   return `${days}d ago`;
 }
 
+function toLocalDateKey(iso: string): string {
+  const d = new Date(iso);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 function buildDailyTimeline(dates: string[], days: number): { date: string; count: number }[] {
   const now = new Date();
   const result: { date: string; count: number }[] = [];
@@ -85,9 +93,9 @@ function buildDailyTimeline(dates: string[], days: number): { date: string; coun
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
+    const key = toLocalDateKey(d.toISOString());
     const label = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-    const key = d.toISOString().slice(0, 10);
-    const count = dates.filter((iso) => iso.slice(0, 10) === key).length;
+    const count = dates.filter((iso) => toLocalDateKey(iso) === key).length;
     result.push({ date: label, count });
   }
 
@@ -105,12 +113,12 @@ function buildCombinedTimeline(
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(d.getDate() - i);
+    const key = toLocalDateKey(d.toISOString());
     const label = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-    const key = d.toISOString().slice(0, 10);
     result.push({
       date: label,
-      users: userDates.filter((iso) => iso.slice(0, 10) === key).length,
-      configurations: configDates.filter((iso) => iso.slice(0, 10) === key).length,
+      users: userDates.filter((iso) => toLocalDateKey(iso) === key).length,
+      configurations: configDates.filter((iso) => toLocalDateKey(iso) === key).length,
     });
   }
 
