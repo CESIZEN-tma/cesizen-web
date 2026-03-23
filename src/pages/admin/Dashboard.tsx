@@ -17,7 +17,7 @@ import {
 } from 'react-icons/md';
 import '../../services/admin-service/css/dashboard.css';
 import Icon from '../../shared/components/Icon';
-import type { AdminLogDto, GetUserDto, SessionInfoDto } from '../../services/admin-service/api/adminTypes';
+import type { AdminLogDto, GetUserDto } from '../../services/admin-service/api/adminTypes';
 
 interface DashboardData {
   totalUsers: number;
@@ -31,8 +31,6 @@ interface DashboardData {
   totalConfigurations: number;
   totalQuizzes: number;
   activeQuizzes: number;
-  totalSessions: number;
-  activeSessions: number;
   recentLogs: AdminLogDto[];
 }
 
@@ -72,7 +70,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [users, admins, pages, tags, menus, configs, quizzes, sessions, logs] =
+        const [users, admins, pages, tags, menus, configs, quizzes, logs] =
           await Promise.all([
             adminApi.users.getAll(),
             adminApi.administrators.getAll(),
@@ -81,12 +79,10 @@ const Dashboard: React.FC = () => {
             adminApi.menus.getAll(),
             adminApi.configurations.getAll(),
             adminApi.quizzes.getAll(),
-            adminApi.sessions.getAll(),
             adminApi.logs.getAll(),
           ]);
 
         const userList: GetUserDto[] = users.data;
-        const sessionList: SessionInfoDto[] = sessions.data;
         const logList: AdminLogDto[] = logs.data;
 
         setData({
@@ -101,8 +97,6 @@ const Dashboard: React.FC = () => {
           totalConfigurations: configs.data.length,
           totalQuizzes: quizzes.data.length,
           activeQuizzes: quizzes.data.filter((q: any) => q.active).length,
-          totalSessions: sessionList.length,
-          activeSessions: sessionList.filter((s) => !s.consumed && new Date(s.expiresAt) > new Date()).length,
           recentLogs: logList
             .sort((a, b) => new Date(b.creationTime).getTime() - new Date(a.creationTime).getTime())
             .slice(0, 8),
@@ -211,25 +205,20 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="kpi-card" onClick={() => navigate('/admin/sessions')}>
+            <div className="kpi-card" onClick={() => navigate('/admin/administrators')}>
               <div className="kpi-card-top">
                 <div className="kpi-icon" style={{ background: 'rgba(28, 176, 246, 0.12)' }}>
-                  <Icon icon={MdDevices} size={22} color="#1cb0f6" />
+                  <Icon icon={MdPerson} size={22} color="#1cb0f6" />
                 </div>
-                <span className={`kpi-badge ${data.activeSessions > 0 ? 'active' : 'inactive'}`}>
-                  {data.activeSessions} live
-                </span>
+                <span className="kpi-badge active">Team</span>
               </div>
-              <div className="kpi-value">{data.totalSessions}</div>
-              <div className="kpi-label">Sessions</div>
+              <div className="kpi-value">{data.totalAdmins}</div>
+              <div className="kpi-label">Administrators</div>
               <div className="health-bar-container">
-                <div className="health-bar" style={{
-                  width: data.totalSessions > 0 ? `${Math.round((data.activeSessions / data.totalSessions) * 100)}%` : '0%',
-                  background: '#1cb0f6'
-                }} />
+                <div className="health-bar" style={{ width: '100%', background: '#1cb0f6' }} />
               </div>
               <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
-                {data.activeSessions} currently active
+                {data.totalAdmins} account{data.totalAdmins !== 1 ? 's' : ''} with access
               </div>
             </div>
 
@@ -345,14 +334,6 @@ const Dashboard: React.FC = () => {
                 <span className="health-item-value" style={{ color: data.lockedUsers > 0 ? '#ff9600' : undefined }}>
                   {data.lockedUsers}
                 </span>
-              </div>
-
-              <div className="health-item">
-                <div className="health-item-left">
-                  <div className="status-dot" style={{ background: '#ce82ff' }} />
-                  <span className="health-item-label">Active sessions</span>
-                </div>
-                <span className="health-item-value">{data.activeSessions}</span>
               </div>
 
               <div className="health-item">
