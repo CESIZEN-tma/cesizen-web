@@ -34,7 +34,7 @@ const Quizzes: React.FC = () => {
         questions: (details.questions ?? []).map((q) => ({
           text: q.text,
           position: q.position,
-          options: (q.responsesOptions ?? []).map((o) => ({
+          options: (q.options ?? []).map((o) => ({
             label: o.label,
             position: o.position,
             targetedField: o.targetedField,

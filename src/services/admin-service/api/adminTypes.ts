@@ -23,8 +23,9 @@ export interface GetUserDto {
   firstName: string;
   lastName: string;
   memberSince: string;
-  thumbnailUrl?: string;
-  active?: boolean;
+  active: boolean;
+  accountActivated: boolean;
+  lockedUntil?: string;
 }
 
 // Session types
@@ -141,7 +142,7 @@ export interface QuestionDto {
   text: string;
   position: number;
   idQuizz: string;
-  responsesOptions?: ResponseOptionDto[];
+  options?: ResponseOptionDto[];
 }
 
 export interface CreateQuestionDto {

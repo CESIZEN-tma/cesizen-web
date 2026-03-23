@@ -3,7 +3,6 @@ import { jwtDecode } from "jwt-decode";
 import { apiClient } from "../configs/axiosConfig";
 
 const TOKEN_KEY = "accessToken";
-const REFRESH_TOKEN_KEY = "refreshToken";
 
 interface LoginCredentials {
   email: string;
@@ -12,7 +11,6 @@ interface LoginCredentials {
 
 interface LoginResponse {
   accessToken: string;
-  refreshToken: string;
 }
 
 interface JwtPayload {
@@ -50,19 +48,15 @@ export function useAuth() {
     async (credentials: LoginCredentials): Promise<boolean> => {
       try {
         setLoading(true);
-        console.log("1")
 
         const response = await apiClient.post<LoginResponse>("/admin/login/web", {
           email: credentials.email,
           password: credentials.password,
           device_info: "web",
         });
-        console.log("2")
-        const { accessToken, refreshToken } = response.data;
 
-        // Stocker les tokens
+        const { accessToken } = response.data;
         localStorage.setItem(TOKEN_KEY, accessToken);
-        localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
         setIsLoggedIn(true);
 
         try {
@@ -84,12 +78,16 @@ export function useAuth() {
   );
 
   // Déconnexion
-  const logout = useCallback((): void => {
-    // Supprimer les tokens
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    window.location.href = "/"
-    setIsLoggedIn(false);
+  const logout = useCallback(async (): Promise<void> => {
+    try {
+      await apiClient.post("/admin/logout");
+    } catch {
+      // ignore errors — clear local state regardless
+    } finally {
+      localStorage.removeItem(TOKEN_KEY);
+      setIsLoggedIn(false);
+      window.location.href = "/";
+    }
   }, []);
 
   return {

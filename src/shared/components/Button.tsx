@@ -3,7 +3,7 @@ import type { IconType } from 'react-icons';
 import './styles/button.css';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger';
+  variant?: 'primary' | 'secondary' | 'danger' | 'outline' | 'warning' | 'success';
   size?: 'small' | 'medium' | 'large';
   fullWidth?: boolean;
   loading?: boolean;
@@ -22,6 +22,7 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   disabled,
   className = '',
+  type = 'button',
   ...rest
 }) => {
   const classes = [
@@ -36,7 +37,7 @@ export const Button: React.FC<ButtonProps> = ({
     .join(' ');
 
   return (
-    <button className={classes} disabled={disabled || loading} {...rest}>
+    <button type={type} className={classes} disabled={disabled || loading} {...rest}>
       {loading && <span className="btn-spinner" />}
       {!loading && IconComponent && iconPosition === 'left' && (
         <IconComponent size={size === 'small' ? 16 : 18} />

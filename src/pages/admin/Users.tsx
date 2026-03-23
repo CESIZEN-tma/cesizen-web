@@ -87,6 +87,15 @@ const Users: React.FC = () => {
       render: (value: string) => formatDate(value),
     },
     {
+      label: 'Account',
+      key: 'accountActivated',
+      render: (value: boolean) => (
+        <Badge variant={value ? 'success' : 'warning'}>
+          {value ? 'Verified' : 'Pending'}
+        </Badge>
+      ),
+    },
+    {
       label: 'Status',
       key: 'active',
       render: (value: boolean) => (
@@ -139,14 +148,14 @@ const Users: React.FC = () => {
       >
         {selectedUser && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div><strong>Email:</strong> {selectedUser.email}</div>
+            <div><strong>Name:</strong> {selectedUser.firstName} {selectedUser.lastName}</div>
+            <div><strong>Member Since:</strong> {formatDate(selectedUser.memberSince)}</div>
             <div>
-              <strong>Email:</strong> {selectedUser.email}
-            </div>
-            <div>
-              <strong>Name:</strong> {selectedUser.firstName} {selectedUser.lastName}
-            </div>
-            <div>
-              <strong>Member Since:</strong> {formatDate(selectedUser.memberSince)}
+              <strong>Account:</strong>{' '}
+              <Badge variant={selectedUser.accountActivated ? 'success' : 'warning'}>
+                {selectedUser.accountActivated ? 'Verified' : 'Pending verification'}
+              </Badge>
             </div>
             <div>
               <strong>Status:</strong>{' '}
@@ -154,15 +163,10 @@ const Users: React.FC = () => {
                 {selectedUser.active ? 'Active' : 'Disabled'}
               </Badge>
             </div>
-            {selectedUser.thumbnailUrl && (
+            {selectedUser.lockedUntil && (
               <div>
-                <strong>Thumbnail:</strong>
-                <br />
-                <img
-                  src={selectedUser.thumbnailUrl}
-                  alt="User thumbnail"
-                  style={{ maxWidth: '100px', marginTop: '8px', borderRadius: '8px' }}
-                />
+                <strong>Locked until:</strong>{' '}
+                <span style={{ color: 'var(--color-danger)' }}>{formatDate(selectedUser.lockedUntil)}</span>
               </div>
             )}
           </div>
