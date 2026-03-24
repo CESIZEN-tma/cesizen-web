@@ -1,17 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
   Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
   Legend,
-} from 'recharts';
+  Filler,
+} from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
 import { Spinner } from '../../shared/components/Spinner';
 import { adminApi } from '../../services/admin-service/api/adminApi';
 import {
@@ -32,6 +34,19 @@ import '../../services/admin-service/css/dashboard.css';
 import Icon from '../../shared/components/Icon';
 import { useCurrentTheme } from '../../shared/hooks/useTheme';
 import type { AdminLogDto, GetUserDto, ConfigurationDto } from '../../services/admin-service/api/adminTypes';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+);
 
 interface DashboardData {
   totalUsers: number;
@@ -189,20 +204,21 @@ const Dashboard: React.FC = () => {
 
   if (!data) return null;
 
-  const gridColor = theme === 'dark' ? '#374151' : '#e5e7eb';
-  const textColor = theme === 'dark' ? '#9ca3af' : '#6b7280';
-  const tooltipBg = theme === 'dark' ? '#1f2937' : '#ffffff';
-  const tooltipBorder = theme === 'dark' ? '#374151' : '#e5e7eb';
+  const isDark = theme === 'dark';
+  const gridColor = isDark ? '#374151' : '#e5e7eb';
+  const textColor = isDark ? '#9ca3af' : '#6b7280';
+  const tooltipBg = isDark ? '#1f2937' : '#ffffff';
+  const tooltipBorder = isDark ? '#374151' : '#e5e7eb';
 
   const userDates = data.allUsers.map((u) => u.memberSince);
   const configDates = data.allConfigurations.map((c) => c.creationTime);
 
-  const registrationsData = buildDailyTimeline(userDates, range);
-  const configurationsData = buildDailyTimeline(configDates, range);
-  const combinedData = buildCombinedTimeline(userDates, configDates, range);
+  const registrationsTimeline = buildDailyTimeline(userDates, range);
+  const configurationsTimeline = buildDailyTimeline(configDates, range);
+  const combinedTimeline = buildCombinedTimeline(userDates, configDates, range);
 
-  const totalRegistrationsInRange = registrationsData.reduce((s, d) => s + d.count, 0);
-  const totalConfigsInRange = configurationsData.reduce((s, d) => s + d.count, 0);
+  const totalRegistrationsInRange = registrationsTimeline.reduce((s, d) => s + d.count, 0);
+  const totalConfigsInRange = configurationsTimeline.reduce((s, d) => s + d.count, 0);
 
   const userActivationRate = data.totalUsers > 0
     ? Math.round((data.activeUsers / data.totalUsers) * 100)
@@ -215,6 +231,101 @@ const Dashboard: React.FC = () => {
   const pagePublishRate = data.totalPages > 0
     ? Math.round((data.publishedPages / data.totalPages) * 100)
     : 0;
+
+  const chartBaseOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: tooltipBg,
+        borderColor: tooltipBorder,
+        borderWidth: 1,
+        titleColor: textColor,
+        bodyColor: textColor,
+      },
+    },
+    scales: {
+      x: {
+        grid: { color: gridColor },
+        ticks: { color: textColor, font: { size: 11 } },
+        border: { display: false },
+      },
+      y: {
+        grid: { color: gridColor },
+        ticks: { color: textColor, font: { size: 11 }, precision: 0 },
+        border: { display: false },
+        beginAtZero: true,
+      },
+    },
+  } as const;
+
+  const registrationsChartData = {
+    labels: registrationsTimeline.map((d) => d.date),
+    datasets: [
+      {
+        label: 'Registrations',
+        data: registrationsTimeline.map((d) => d.count),
+        borderColor: '#58cc02',
+        backgroundColor: isDark ? 'rgba(88,204,2,0.15)' : 'rgba(88,204,2,0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#58cc02',
+      },
+    ],
+  };
+
+  const configurationsChartData = {
+    labels: configurationsTimeline.map((d) => d.date),
+    datasets: [
+      {
+        label: 'Configurations',
+        data: configurationsTimeline.map((d) => d.count),
+        borderColor: '#1cb0f6',
+        backgroundColor: isDark ? 'rgba(28,176,246,0.15)' : 'rgba(28,176,246,0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#1cb0f6',
+      },
+    ],
+  };
+
+  const combinedChartData = {
+    labels: combinedTimeline.map((d) => d.date),
+    datasets: [
+      {
+        label: 'Registrations',
+        data: combinedTimeline.map((d) => d.users),
+        backgroundColor: isDark ? 'rgba(88,204,2,0.7)' : 'rgba(88,204,2,0.8)',
+        borderColor: '#58cc02',
+        borderWidth: 1,
+        borderRadius: 4,
+      },
+      {
+        label: 'Configurations',
+        data: combinedTimeline.map((d) => d.configurations),
+        backgroundColor: isDark ? 'rgba(28,176,246,0.7)' : 'rgba(28,176,246,0.8)',
+        borderColor: '#1cb0f6',
+        borderWidth: 1,
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  const combinedChartOptions = {
+    ...chartBaseOptions,
+    plugins: {
+      ...chartBaseOptions.plugins,
+      legend: {
+        display: true,
+        labels: { color: textColor, font: { size: 12 } },
+      },
+    },
+  } as const;
 
   return (
     <div className="admin-page">
@@ -517,26 +628,8 @@ const Dashboard: React.FC = () => {
                   {totalRegistrationsInRange} over {range}d
                 </span>
               </div>
-              <div className="chart-body" style={{ height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={registrationsData} margin={{ top: 8, right: 16, left: -10, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#58cc02" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#58cc02" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-                    <XAxis dataKey="date" tick={{ fill: textColor, fontSize: 11 }} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fill: textColor, fontSize: 11 }} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 13 }}
-                      labelStyle={{ color: textColor }}
-                      formatter={(v: number) => [v, 'Registrations']}
-                    />
-                    <Area type="monotone" dataKey="count" stroke="#58cc02" strokeWidth={2} fill="url(#colorUsers)" />
-                  </AreaChart>
-                </ResponsiveContainer>
+              <div className="chart-body" style={{ height: 260, padding: '16px 16px 8px' }}>
+                <Line data={registrationsChartData} options={chartBaseOptions} />
               </div>
             </div>
 
@@ -548,26 +641,8 @@ const Dashboard: React.FC = () => {
                   {totalConfigsInRange} over {range}d
                 </span>
               </div>
-              <div className="chart-body" style={{ height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={configurationsData} margin={{ top: 8, right: 16, left: -10, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorConfigs" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#1cb0f6" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#1cb0f6" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-                    <XAxis dataKey="date" tick={{ fill: textColor, fontSize: 11 }} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fill: textColor, fontSize: 11 }} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 13 }}
-                      labelStyle={{ color: textColor }}
-                      formatter={(v: number) => [v, 'Configurations']}
-                    />
-                    <Area type="monotone" dataKey="count" stroke="#1cb0f6" strokeWidth={2} fill="url(#colorConfigs)" />
-                  </AreaChart>
-                </ResponsiveContainer>
+              <div className="chart-body" style={{ height: 260, padding: '16px 16px 8px' }}>
+                <Line data={configurationsChartData} options={chartBaseOptions} />
               </div>
             </div>
 
@@ -579,21 +654,8 @@ const Dashboard: React.FC = () => {
                   Combined view
                 </span>
               </div>
-              <div className="chart-body" style={{ height: 260 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={combinedData} margin={{ top: 8, right: 16, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
-                    <XAxis dataKey="date" tick={{ fill: textColor, fontSize: 11 }} tickLine={false} />
-                    <YAxis allowDecimals={false} tick={{ fill: textColor, fontSize: 11 }} tickLine={false} axisLine={false} />
-                    <Tooltip
-                      contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 13 }}
-                      labelStyle={{ color: textColor }}
-                    />
-                    <Legend wrapperStyle={{ fontSize: 13, color: textColor }} />
-                    <Bar dataKey="users" name="Registrations" fill="#58cc02" radius={[4, 4, 0, 0]} maxBarSize={20} />
-                    <Bar dataKey="configurations" name="Configurations" fill="#1cb0f6" radius={[4, 4, 0, 0]} maxBarSize={20} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <div className="chart-body" style={{ height: 260, padding: '16px 16px 8px' }}>
+                <Bar data={combinedChartData} options={combinedChartOptions} />
               </div>
             </div>
 
