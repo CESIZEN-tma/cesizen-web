@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 import { Spinner } from '../../shared/components/Spinner';
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 import { adminApi } from '../../services/admin-service/api/adminApi';
 import {
   MdPeople,
@@ -83,40 +87,6 @@ function buildDailyTimeline(dates: string[], days: number): { date: string; coun
   });
 }
 
-interface SimpleBarChartProps {
-  data: { date: string; count: number }[];
-  color: string;
-}
-
-const SimpleBarChart: React.FC<SimpleBarChartProps> = ({ data, color }) => {
-  const max = Math.max(...data.map((d) => d.count), 1);
-  const step = data.length > 30 ? 7 : data.length > 14 ? 3 : 1;
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 160, padding: '0 8px' }}>
-      {data.map((d, i) => (
-        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
-          <div
-            title={`${d.date}: ${d.count}`}
-            style={{
-              width: '100%',
-              height: `${Math.max((d.count / max) * 130, d.count > 0 ? 4 : 1)}px`,
-              background: d.count > 0 ? color : 'var(--color-border)',
-              borderRadius: '3px 3px 0 0',
-              transition: 'height 0.3s ease',
-              minHeight: 1,
-            }}
-          />
-          {i % step === 0 && (
-            <span style={{ fontSize: 9, color: 'var(--color-gray-500)', whiteSpace: 'nowrap', transform: 'rotate(-45deg)', transformOrigin: 'top left', marginTop: 4, marginLeft: 4 }}>
-              {d.date}
-            </span>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-};
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -462,8 +432,14 @@ const Dashboard: React.FC = () => {
                   {totalRegistrationsInRange} over {range}d
                 </span>
               </div>
-              <div className="chart-body" style={{ paddingBottom: 32 }}>
-                <SimpleBarChart data={registrationsTimeline} color="#58cc02" />
+              <div className="chart-body" style={{ height: 260 }}>
+                <Bar
+                  data={{
+                    labels: registrationsTimeline.map((d) => d.date),
+                    datasets: [{ label: 'Registrations', data: registrationsTimeline.map((d) => d.count), backgroundColor: '#58cc02' }],
+                  }}
+                  options={{ responsive: true, maintainAspectRatio: false }}
+                />
               </div>
             </div>
 
@@ -474,8 +450,14 @@ const Dashboard: React.FC = () => {
                   {totalConfigsInRange} over {range}d
                 </span>
               </div>
-              <div className="chart-body" style={{ paddingBottom: 32 }}>
-                <SimpleBarChart data={configurationsTimeline} color="#1cb0f6" />
+              <div className="chart-body" style={{ height: 260 }}>
+                <Bar
+                  data={{
+                    labels: configurationsTimeline.map((d) => d.date),
+                    datasets: [{ label: 'Configurations', data: configurationsTimeline.map((d) => d.count), backgroundColor: '#1cb0f6' }],
+                  }}
+                  options={{ responsive: true, maintainAspectRatio: false }}
+                />
               </div>
             </div>
 
