@@ -1,19 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
-import { Line, Bar } from 'react-chartjs-2';
 import { Spinner } from '../../shared/components/Spinner';
 import { adminApi } from '../../services/admin-service/api/adminApi';
 import {
@@ -32,21 +18,7 @@ import {
 } from 'react-icons/md';
 import '../../services/admin-service/css/dashboard.css';
 import Icon from '../../shared/components/Icon';
-import { useCurrentTheme } from '../../shared/hooks/useTheme';
 import type { AdminLogDto, GetUserDto, ConfigurationDto } from '../../services/admin-service/api/adminTypes';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-);
 
 interface DashboardData {
   totalUsers: number;
@@ -95,54 +67,59 @@ function formatRelativeTime(dateStr: string): string {
 
 function toLocalDateKey(iso: string): string {
   const d = new Date(iso);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function buildDailyTimeline(dates: string[], days: number): { date: string; count: number }[] {
   const now = new Date();
-  const result: { date: string; count: number }[] = [];
-
-  for (let i = days - 1; i >= 0; i--) {
+  return Array.from({ length: days }, (_, i) => {
     const d = new Date(now);
-    d.setDate(d.getDate() - i);
+    d.setDate(d.getDate() - (days - 1 - i));
     const key = toLocalDateKey(d.toISOString());
-    const label = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-    const count = dates.filter((iso) => toLocalDateKey(iso) === key).length;
-    result.push({ date: label, count });
-  }
-
-  return result;
+    return {
+      date: d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }),
+      count: dates.filter((iso) => toLocalDateKey(iso) === key).length,
+    };
+  });
 }
 
-function buildCombinedTimeline(
-  userDates: string[],
-  configDates: string[],
-  days: number,
-): { date: string; users: number; configurations: number }[] {
-  const now = new Date();
-  const result: { date: string; users: number; configurations: number }[] = [];
-
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(d.getDate() - i);
-    const key = toLocalDateKey(d.toISOString());
-    const label = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' });
-    result.push({
-      date: label,
-      users: userDates.filter((iso) => toLocalDateKey(iso) === key).length,
-      configurations: configDates.filter((iso) => toLocalDateKey(iso) === key).length,
-    });
-  }
-
-  return result;
+interface SimpleBarChartProps {
+  data: { date: string; count: number }[];
+  color: string;
 }
+
+const SimpleBarChart: React.FC<SimpleBarChartProps> = ({ data, color }) => {
+  const max = Math.max(...data.map((d) => d.count), 1);
+  const step = data.length > 30 ? 7 : data.length > 14 ? 3 : 1;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 160, padding: '0 8px' }}>
+      {data.map((d, i) => (
+        <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, height: '100%', justifyContent: 'flex-end' }}>
+          <div
+            title={`${d.date}: ${d.count}`}
+            style={{
+              width: '100%',
+              height: `${Math.max((d.count / max) * 130, d.count > 0 ? 4 : 1)}px`,
+              background: d.count > 0 ? color : 'var(--color-border)',
+              borderRadius: '3px 3px 0 0',
+              transition: 'height 0.3s ease',
+              minHeight: 1,
+            }}
+          />
+          {i % step === 0 && (
+            <span style={{ fontSize: 9, color: 'var(--color-gray-500)', whiteSpace: 'nowrap', transform: 'rotate(-45deg)', transformOrigin: 'top left', marginTop: 4, marginLeft: 4 }}>
+              {d.date}
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const theme = useCurrentTheme();
   const [activeTab, setActiveTab] = useState<'overview' | 'analytics'>('overview');
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -151,17 +128,16 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [users, admins, pages, tags, menus, configs, quizzes, logs] =
-          await Promise.all([
-            adminApi.users.getAll(),
-            adminApi.administrators.getAll(),
-            adminApi.pages.getAll(),
-            adminApi.tags.getAll(),
-            adminApi.menus.getAll(),
-            adminApi.configurations.getAll(),
-            adminApi.quizzes.getAll(),
-            adminApi.logs.getAll(),
-          ]);
+        const [users, admins, pages, tags, menus, configs, quizzes, logs] = await Promise.all([
+          adminApi.users.getAll(),
+          adminApi.administrators.getAll(),
+          adminApi.pages.getAll(),
+          adminApi.tags.getAll(),
+          adminApi.menus.getAll(),
+          adminApi.configurations.getAll(),
+          adminApi.quizzes.getAll(),
+          adminApi.logs.getAll(),
+        ]);
 
         const userList: GetUserDto[] = users.data;
         const logList: AdminLogDto[] = logs.data;
@@ -204,134 +180,23 @@ const Dashboard: React.FC = () => {
 
   if (!data) return null;
 
-  const isDark = theme === 'dark';
-  const gridColor = isDark ? '#374151' : '#e5e7eb';
-  const textColor = isDark ? '#9ca3af' : '#6b7280';
-  const tooltipBg = isDark ? '#1f2937' : '#ffffff';
-  const tooltipBorder = isDark ? '#374151' : '#e5e7eb';
-
   const userDates = data.allUsers.map((u) => u.memberSince);
   const configDates = data.allConfigurations.map((c) => c.creationTime);
 
   const registrationsTimeline = buildDailyTimeline(userDates, range);
   const configurationsTimeline = buildDailyTimeline(configDates, range);
-  const combinedTimeline = buildCombinedTimeline(userDates, configDates, range);
 
   const totalRegistrationsInRange = registrationsTimeline.reduce((s, d) => s + d.count, 0);
   const totalConfigsInRange = configurationsTimeline.reduce((s, d) => s + d.count, 0);
 
-  const userActivationRate = data.totalUsers > 0
-    ? Math.round((data.activeUsers / data.totalUsers) * 100)
-    : 0;
-
-  const quizActivationRate = data.totalQuizzes > 0
-    ? Math.round((data.activeQuizzes / data.totalQuizzes) * 100)
-    : 0;
-
-  const pagePublishRate = data.totalPages > 0
-    ? Math.round((data.publishedPages / data.totalPages) * 100)
-    : 0;
-
-  const chartBaseOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        backgroundColor: tooltipBg,
-        borderColor: tooltipBorder,
-        borderWidth: 1,
-        titleColor: textColor,
-        bodyColor: textColor,
-      },
-    },
-    scales: {
-      x: {
-        grid: { color: gridColor },
-        ticks: { color: textColor, font: { size: 11 } },
-        border: { display: false },
-      },
-      y: {
-        grid: { color: gridColor },
-        ticks: { color: textColor, font: { size: 11 }, precision: 0 },
-        border: { display: false },
-        beginAtZero: true,
-      },
-    },
-  } as const;
-
-  const registrationsChartData = {
-    labels: registrationsTimeline.map((d) => d.date),
-    datasets: [
-      {
-        label: 'Registrations',
-        data: registrationsTimeline.map((d) => d.count),
-        borderColor: '#58cc02',
-        backgroundColor: isDark ? 'rgba(88,204,2,0.15)' : 'rgba(88,204,2,0.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 3,
-        pointBackgroundColor: '#58cc02',
-      },
-    ],
-  };
-
-  const configurationsChartData = {
-    labels: configurationsTimeline.map((d) => d.date),
-    datasets: [
-      {
-        label: 'Configurations',
-        data: configurationsTimeline.map((d) => d.count),
-        borderColor: '#1cb0f6',
-        backgroundColor: isDark ? 'rgba(28,176,246,0.15)' : 'rgba(28,176,246,0.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 3,
-        pointBackgroundColor: '#1cb0f6',
-      },
-    ],
-  };
-
-  const combinedChartData = {
-    labels: combinedTimeline.map((d) => d.date),
-    datasets: [
-      {
-        label: 'Registrations',
-        data: combinedTimeline.map((d) => d.users),
-        backgroundColor: isDark ? 'rgba(88,204,2,0.7)' : 'rgba(88,204,2,0.8)',
-        borderColor: '#58cc02',
-        borderWidth: 1,
-        borderRadius: 4,
-      },
-      {
-        label: 'Configurations',
-        data: combinedTimeline.map((d) => d.configurations),
-        backgroundColor: isDark ? 'rgba(28,176,246,0.7)' : 'rgba(28,176,246,0.8)',
-        borderColor: '#1cb0f6',
-        borderWidth: 1,
-        borderRadius: 4,
-      },
-    ],
-  };
-
-  const combinedChartOptions = {
-    ...chartBaseOptions,
-    plugins: {
-      ...chartBaseOptions.plugins,
-      legend: {
-        display: true,
-        labels: { color: textColor, font: { size: 12 } },
-      },
-    },
-  } as const;
+  const userActivationRate = data.totalUsers > 0 ? Math.round((data.activeUsers / data.totalUsers) * 100) : 0;
+  const quizActivationRate = data.totalQuizzes > 0 ? Math.round((data.activeQuizzes / data.totalQuizzes) * 100) : 0;
+  const pagePublishRate = data.totalPages > 0 ? Math.round((data.publishedPages / data.totalPages) * 100) : 0;
 
   return (
     <div className="admin-page">
       <div className="dashboard">
 
-        {/* Header + tabs */}
         <div className="dashboard-header">
           <div>
             <h1>Dashboard</h1>
@@ -355,272 +220,241 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {activeTab === 'overview' && <>
+        {activeTab === 'overview' && (
+          <>
+            <div>
+              <p className="dashboard-section-title">Key metrics</p>
+              <div className="dashboard-kpis">
 
-        {/* Primary KPIs */}
-        <div>
-          <p className="dashboard-section-title">Key metrics</p>
-          <div className="dashboard-kpis">
-
-            <div className="kpi-card" onClick={() => navigate('/admin/users')}>
-              <div className="kpi-card-top">
-                <div className="kpi-icon" style={{ background: 'rgba(88, 204, 2, 0.12)' }}>
-                  <Icon icon={MdPeople} size={22} color="#58cc02" />
+                <div className="kpi-card" onClick={() => navigate('/admin/users')}>
+                  <div className="kpi-card-top">
+                    <div className="kpi-icon" style={{ background: 'rgba(88, 204, 2, 0.12)' }}>
+                      <Icon icon={MdPeople} size={22} color="#58cc02" />
+                    </div>
+                    <span className={`kpi-badge ${data.lockedUsers === 0 ? 'active' : 'inactive'}`}>
+                      {data.lockedUsers === 0 ? 'All clear' : `${data.lockedUsers} locked`}
+                    </span>
+                  </div>
+                  <div className="kpi-value">{data.totalUsers}</div>
+                  <div className="kpi-label">Total users</div>
+                  <div className="health-bar-container">
+                    <div className="health-bar" style={{ width: `${userActivationRate}%`, background: '#58cc02' }} />
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
+                    {data.activeUsers} active · {userActivationRate}% activation rate
+                  </div>
                 </div>
-                <span className={`kpi-badge ${data.lockedUsers === 0 ? 'active' : 'inactive'}`}>
-                  {data.lockedUsers === 0 ? 'All clear' : `${data.lockedUsers} locked`}
-                </span>
-              </div>
-              <div className="kpi-value">{data.totalUsers}</div>
-              <div className="kpi-label">Total users</div>
-              <div className="health-bar-container">
-                <div className="health-bar" style={{ width: `${userActivationRate}%`, background: '#58cc02' }} />
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
-                {data.activeUsers} active · {userActivationRate}% activation rate
-              </div>
-            </div>
 
-            <div className="kpi-card" onClick={() => navigate('/admin/quizzes')}>
-              <div className="kpi-card-top">
-                <div className="kpi-icon" style={{ background: 'rgba(206, 130, 255, 0.12)' }}>
-                  <Icon icon={MdQuiz} size={22} color="#ce82ff" />
+                <div className="kpi-card" onClick={() => navigate('/admin/quizzes')}>
+                  <div className="kpi-card-top">
+                    <div className="kpi-icon" style={{ background: 'rgba(206, 130, 255, 0.12)' }}>
+                      <Icon icon={MdQuiz} size={22} color="#ce82ff" />
+                    </div>
+                    <span className={`kpi-badge ${data.activeQuizzes > 0 ? 'active' : 'inactive'}`}>
+                      {data.activeQuizzes} active
+                    </span>
+                  </div>
+                  <div className="kpi-value">{data.totalQuizzes}</div>
+                  <div className="kpi-label">Quizzes</div>
+                  <div className="health-bar-container">
+                    <div className="health-bar" style={{ width: `${quizActivationRate}%`, background: '#ce82ff' }} />
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
+                    {quizActivationRate}% published
+                  </div>
                 </div>
-                <span className={`kpi-badge ${data.activeQuizzes > 0 ? 'active' : 'inactive'}`}>
-                  {data.activeQuizzes} active
-                </span>
-              </div>
-              <div className="kpi-value">{data.totalQuizzes}</div>
-              <div className="kpi-label">Quizzes</div>
-              <div className="health-bar-container">
-                <div className="health-bar" style={{ width: `${quizActivationRate}%`, background: '#ce82ff' }} />
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
-                {quizActivationRate}% published
-              </div>
-            </div>
 
-            <div className="kpi-card" onClick={() => navigate('/admin/pages')}>
-              <div className="kpi-card-top">
-                <div className="kpi-icon" style={{ background: 'rgba(255, 150, 0, 0.12)' }}>
-                  <Icon icon={MdArticle} size={22} color="#ff9600" />
+                <div className="kpi-card" onClick={() => navigate('/admin/pages')}>
+                  <div className="kpi-card-top">
+                    <div className="kpi-icon" style={{ background: 'rgba(255, 150, 0, 0.12)' }}>
+                      <Icon icon={MdArticle} size={22} color="#ff9600" />
+                    </div>
+                    <span className={`kpi-badge ${data.publishedPages > 0 ? 'active' : 'inactive'}`}>
+                      {data.publishedPages} published
+                    </span>
+                  </div>
+                  <div className="kpi-value">{data.totalPages}</div>
+                  <div className="kpi-label">Information pages</div>
+                  <div className="health-bar-container">
+                    <div className="health-bar" style={{ width: `${pagePublishRate}%`, background: '#ff9600' }} />
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
+                    {pagePublishRate}% published
+                  </div>
                 </div>
-                <span className={`kpi-badge ${data.publishedPages > 0 ? 'active' : 'inactive'}`}>
-                  {data.publishedPages} published
-                </span>
-              </div>
-              <div className="kpi-value">{data.totalPages}</div>
-              <div className="kpi-label">Information pages</div>
-              <div className="health-bar-container">
-                <div className="health-bar" style={{ width: `${pagePublishRate}%`, background: '#ff9600' }} />
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
-                {pagePublishRate}% published
-              </div>
-            </div>
 
-            <div className="kpi-card" onClick={() => navigate('/admin/administrators')}>
-              <div className="kpi-card-top">
-                <div className="kpi-icon" style={{ background: 'rgba(28, 176, 246, 0.12)' }}>
-                  <Icon icon={MdPerson} size={22} color="#1cb0f6" />
+                <div className="kpi-card" onClick={() => navigate('/admin/administrators')}>
+                  <div className="kpi-card-top">
+                    <div className="kpi-icon" style={{ background: 'rgba(28, 176, 246, 0.12)' }}>
+                      <Icon icon={MdPerson} size={22} color="#1cb0f6" />
+                    </div>
+                    <span className="kpi-badge active">Team</span>
+                  </div>
+                  <div className="kpi-value">{data.totalAdmins}</div>
+                  <div className="kpi-label">Administrators</div>
+                  <div className="health-bar-container">
+                    <div className="health-bar" style={{ width: '100%', background: '#1cb0f6' }} />
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
+                    {data.totalAdmins} account{data.totalAdmins !== 1 ? 's' : ''} with access
+                  </div>
                 </div>
-                <span className="kpi-badge active">Team</span>
-              </div>
-              <div className="kpi-value">{data.totalAdmins}</div>
-              <div className="kpi-label">Administrators</div>
-              <div className="health-bar-container">
-                <div className="health-bar" style={{ width: '100%', background: '#1cb0f6' }} />
-              </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
-                {data.totalAdmins} account{data.totalAdmins !== 1 ? 's' : ''} with access
+
               </div>
             </div>
 
-          </div>
-        </div>
+            <div>
+              <p className="dashboard-section-title">Content & configuration</p>
+              <div className="dashboard-secondary">
 
-        {/* Secondary stats */}
-        <div>
-          <p className="dashboard-section-title">Content & configuration</p>
-          <div className="dashboard-secondary">
+                <div className="secondary-card" onClick={() => navigate('/admin/configurations')}>
+                  <div className="secondary-icon" style={{ background: 'rgba(88, 204, 2, 0.12)' }}>
+                    <Icon icon={MdSettings} size={20} color="#58cc02" />
+                  </div>
+                  <div className="secondary-content">
+                    <div className="secondary-value">{data.totalConfigurations}</div>
+                    <div className="secondary-label">Breathing configurations</div>
+                  </div>
+                  <Icon icon={MdArrowForward} size={18} color="var(--color-gray-400)" />
+                </div>
 
-            <div className="secondary-card" onClick={() => navigate('/admin/configurations')}>
-              <div className="secondary-icon" style={{ background: 'rgba(88, 204, 2, 0.12)' }}>
-                <Icon icon={MdSettings} size={20} color="#58cc02" />
+                <div className="secondary-card" onClick={() => navigate('/admin/tags')}>
+                  <div className="secondary-icon" style={{ background: 'rgba(255, 150, 0, 0.12)' }}>
+                    <Icon icon={MdLabel} size={20} color="#ff9600" />
+                  </div>
+                  <div className="secondary-content">
+                    <div className="secondary-value">{data.totalTags}</div>
+                    <div className="secondary-label">Information tags</div>
+                  </div>
+                  <Icon icon={MdArrowForward} size={18} color="var(--color-gray-400)" />
+                </div>
+
+                <div className="secondary-card" onClick={() => navigate('/admin/menus')}>
+                  <div className="secondary-icon" style={{ background: 'rgba(28, 176, 246, 0.12)' }}>
+                    <Icon icon={MdMenu} size={20} color="#1cb0f6" />
+                  </div>
+                  <div className="secondary-content">
+                    <div className="secondary-value">{data.totalMenus}</div>
+                    <div className="secondary-label">Navigation menus</div>
+                  </div>
+                  <Icon icon={MdArrowForward} size={18} color="var(--color-gray-400)" />
+                </div>
+
               </div>
-              <div className="secondary-content">
-                <div className="secondary-value">{data.totalConfigurations}</div>
-                <div className="secondary-label">Breathing configurations</div>
-              </div>
-              <Icon icon={MdArrowForward} size={18} color="var(--color-gray-400)" />
             </div>
 
-            <div className="secondary-card" onClick={() => navigate('/admin/tags')}>
-              <div className="secondary-icon" style={{ background: 'rgba(255, 150, 0, 0.12)' }}>
-                <Icon icon={MdLabel} size={20} color="#ff9600" />
-              </div>
-              <div className="secondary-content">
-                <div className="secondary-value">{data.totalTags}</div>
-                <div className="secondary-label">Information tags</div>
-              </div>
-              <Icon icon={MdArrowForward} size={18} color="var(--color-gray-400)" />
-            </div>
+            <div className="dashboard-bottom">
 
-            <div className="secondary-card" onClick={() => navigate('/admin/menus')}>
-              <div className="secondary-icon" style={{ background: 'rgba(28, 176, 246, 0.12)' }}>
-                <Icon icon={MdMenu} size={20} color="#1cb0f6" />
-              </div>
-              <div className="secondary-content">
-                <div className="secondary-value">{data.totalMenus}</div>
-                <div className="secondary-label">Navigation menus</div>
-              </div>
-              <Icon icon={MdArrowForward} size={18} color="var(--color-gray-400)" />
-            </div>
-
-          </div>
-        </div>
-
-        {/* Activity + Health */}
-        <div className="dashboard-bottom">
-
-          {/* Recent activity */}
-          <div className="activity-card">
-            <div className="activity-card-header">
-              <h3>Recent activity</h3>
-              <Link to="/admin/logs">View all logs →</Link>
-            </div>
-            <div className="activity-list">
-              {data.recentLogs.length === 0 ? (
-                <div className="activity-empty">No recent activity</div>
-              ) : (
-                data.recentLogs.map((log) => (
-                  <div className="activity-item" key={log.id}>
-                    <div
-                      className="activity-dot"
-                      style={{ background: getActionDotColor(log.actionCode) }}
-                    />
-                    <div className="activity-content">
-                      <div className="activity-description">{log.description}</div>
-                      <div className="activity-meta">
-                        <span className={`activity-code ${getActionClass(log.actionCode)}`}>
-                          {log.actionCode}
-                        </span>
-                        <span className="activity-time">{formatRelativeTime(log.creationTime)}</span>
+              <div className="activity-card">
+                <div className="activity-card-header">
+                  <h3>Recent activity</h3>
+                  <Link to="/admin/logs">View all logs →</Link>
+                </div>
+                <div className="activity-list">
+                  {data.recentLogs.length === 0 ? (
+                    <div className="activity-empty">No recent activity</div>
+                  ) : (
+                    data.recentLogs.map((log) => (
+                      <div className="activity-item" key={log.id}>
+                        <div className="activity-dot" style={{ background: getActionDotColor(log.actionCode) }} />
+                        <div className="activity-content">
+                          <div className="activity-description">{log.description}</div>
+                          <div className="activity-meta">
+                            <span className={`activity-code ${getActionClass(log.actionCode)}`}>{log.actionCode}</span>
+                            <span className="activity-time">{formatRelativeTime(log.creationTime)}</span>
+                          </div>
+                        </div>
                       </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="health-card">
+                <div className="health-card-header">
+                  <h3>Platform health</h3>
+                </div>
+                <div className="health-list">
+                  <div className="health-item">
+                    <div className="health-item-left">
+                      <div className="status-dot" style={{ background: '#58cc02' }} />
+                      <span className="health-item-label">API</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Icon icon={MdCheckCircle} size={16} color="#58cc02" />
+                      <span className="health-item-value" style={{ color: '#58cc02' }}>Operational</span>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* System health */}
-          <div className="health-card">
-            <div className="health-card-header">
-              <h3>Platform health</h3>
-            </div>
-            <div className="health-list">
-
-              <div className="health-item">
-                <div className="health-item-left">
-                  <div className="status-dot" style={{ background: '#58cc02' }} />
-                  <span className="health-item-label">API</span>
+                  <div className="health-item">
+                    <div className="health-item-left">
+                      <div className="status-dot" style={{ background: '#1cb0f6' }} />
+                      <span className="health-item-label">Administrators</span>
+                    </div>
+                    <span className="health-item-value">{data.totalAdmins}</span>
+                  </div>
+                  <div className="health-item">
+                    <div className="health-item-left">
+                      <div className="status-dot" style={{ background: data.lockedUsers > 0 ? '#ff9600' : '#58cc02' }} />
+                      <span className="health-item-label">Locked accounts</span>
+                    </div>
+                    <span className="health-item-value" style={{ color: data.lockedUsers > 0 ? '#ff9600' : undefined }}>
+                      {data.lockedUsers}
+                    </span>
+                  </div>
+                  <div className="health-item">
+                    <div className="health-item-left">
+                      <div className="status-dot" style={{ background: '#ff9600' }} />
+                      <span className="health-item-label">Inactive users</span>
+                    </div>
+                    <span className="health-item-value">{data.totalUsers - data.activeUsers}</span>
+                  </div>
+                  <div className="health-item">
+                    <div className="health-item-left">
+                      <Icon icon={MdShield} size={16} color="var(--color-gray-400)" />
+                      <span className="health-item-label">Admin logs total</span>
+                    </div>
+                    <span className="health-item-value">{data.recentLogs.length > 0 ? '✓' : '—'}</span>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Icon icon={MdCheckCircle} size={16} color="#58cc02" />
-                  <span className="health-item-value" style={{ color: '#58cc02' }}>Operational</span>
-                </div>
-              </div>
-
-              <div className="health-item">
-                <div className="health-item-left">
-                  <div className="status-dot" style={{ background: '#1cb0f6' }} />
-                  <span className="health-item-label">Administrators</span>
-                </div>
-                <span className="health-item-value">{data.totalAdmins}</span>
-              </div>
-
-              <div className="health-item">
-                <div className="health-item-left">
-                  <div className="status-dot" style={{ background: data.lockedUsers > 0 ? '#ff9600' : '#58cc02' }} />
-                  <span className="health-item-label">Locked accounts</span>
-                </div>
-                <span className="health-item-value" style={{ color: data.lockedUsers > 0 ? '#ff9600' : undefined }}>
-                  {data.lockedUsers}
-                </span>
-              </div>
-
-              <div className="health-item">
-                <div className="health-item-left">
-                  <div className="status-dot" style={{ background: '#ff9600' }} />
-                  <span className="health-item-label">Inactive users</span>
-                </div>
-                <span className="health-item-value">{data.totalUsers - data.activeUsers}</span>
-              </div>
-
-              <div className="health-item">
-                <div className="health-item-left">
-                  <Icon icon={MdShield} size={16} color="var(--color-gray-400)" />
-                  <span className="health-item-label">Admin logs total</span>
-                </div>
-                <span className="health-item-value">{data.recentLogs.length > 0 ? '✓' : '—'}</span>
               </div>
 
             </div>
-          </div>
-
-        </div>
-
-        </>}
+          </>
+        )}
 
         {activeTab === 'analytics' && (
           <div className="analytics-tab">
 
-            {/* Range selector */}
             <div className="analytics-controls">
               <p className="dashboard-section-title" style={{ margin: 0 }}>Growth over time</p>
               <div className="range-selector">
                 {([14, 30, 90] as const).map((r) => (
-                  <button
-                    key={r}
-                    className={`range-btn ${range === r ? 'active' : ''}`}
-                    onClick={() => setRange(r)}
-                  >
+                  <button key={r} className={`range-btn ${range === r ? 'active' : ''}`} onClick={() => setRange(r)}>
                     {r}d
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Summary row */}
             <div className="analytics-summary">
               <div className="analytics-summary-card">
-                <div className="analytics-summary-value" style={{ color: '#58cc02' }}>
-                  +{totalRegistrationsInRange}
-                </div>
+                <div className="analytics-summary-value" style={{ color: '#58cc02' }}>+{totalRegistrationsInRange}</div>
                 <div className="analytics-summary-label">New users in {range} days</div>
               </div>
               <div className="analytics-summary-card">
-                <div className="analytics-summary-value" style={{ color: '#1cb0f6' }}>
-                  +{totalConfigsInRange}
-                </div>
+                <div className="analytics-summary-value" style={{ color: '#1cb0f6' }}>+{totalConfigsInRange}</div>
                 <div className="analytics-summary-label">Configurations in {range} days</div>
               </div>
               <div className="analytics-summary-card">
-                <div className="analytics-summary-value" style={{ color: '#ce82ff' }}>
-                  {data.totalUsers}
-                </div>
+                <div className="analytics-summary-value" style={{ color: '#ce82ff' }}>{data.totalUsers}</div>
                 <div className="analytics-summary-label">Total users</div>
               </div>
               <div className="analytics-summary-card">
-                <div className="analytics-summary-value" style={{ color: '#ff9600' }}>
-                  {data.totalConfigurations}
-                </div>
+                <div className="analytics-summary-value" style={{ color: '#ff9600' }}>{data.totalConfigurations}</div>
                 <div className="analytics-summary-label">Total configurations</div>
               </div>
             </div>
 
-            {/* User registrations chart */}
             <div className="chart-card">
               <div className="chart-card-header">
                 <h3>User registrations per day</h3>
@@ -628,12 +462,11 @@ const Dashboard: React.FC = () => {
                   {totalRegistrationsInRange} over {range}d
                 </span>
               </div>
-              <div className="chart-body" style={{ height: 260, padding: '16px 16px 8px' }}>
-                <Line data={registrationsChartData} options={chartBaseOptions} />
+              <div className="chart-body" style={{ paddingBottom: 32 }}>
+                <SimpleBarChart data={registrationsTimeline} color="#58cc02" />
               </div>
             </div>
 
-            {/* Configurations chart */}
             <div className="chart-card">
               <div className="chart-card-header">
                 <h3>Configurations created per day</h3>
@@ -641,21 +474,8 @@ const Dashboard: React.FC = () => {
                   {totalConfigsInRange} over {range}d
                 </span>
               </div>
-              <div className="chart-body" style={{ height: 260, padding: '16px 16px 8px' }}>
-                <Line data={configurationsChartData} options={chartBaseOptions} />
-              </div>
-            </div>
-
-            {/* Combined bar chart */}
-            <div className="chart-card">
-              <div className="chart-card-header">
-                <h3>Users vs Configurations</h3>
-                <span className="chart-badge" style={{ background: 'rgba(206,130,255,0.12)', color: '#8800cc' }}>
-                  Combined view
-                </span>
-              </div>
-              <div className="chart-body" style={{ height: 260, padding: '16px 16px 8px' }}>
-                <Bar data={combinedChartData} options={combinedChartOptions} />
+              <div className="chart-body" style={{ paddingBottom: 32 }}>
+                <SimpleBarChart data={configurationsTimeline} color="#1cb0f6" />
               </div>
             </div>
 
