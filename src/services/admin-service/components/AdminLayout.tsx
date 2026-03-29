@@ -12,7 +12,6 @@ import {
   MdSettings,
   MdQuiz,
   MdHistory,
-  MdDevices,
   MdLogout,
   MdClose,
   MdLightMode,
@@ -47,7 +46,6 @@ const menuItems: MenuItem[] = [
   { path: '/configurations', label: 'Configurations', icon: MdSettings },
   { path: '/quizzes', label: 'Quizzes', icon: MdQuiz },
   { path: '/logs', label: 'Admin Logs', icon: MdHistory },
-  { path: '/sessions', label: 'Sessions', icon: MdDevices },
 ];
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
