@@ -59,12 +59,12 @@ export interface CreateInformationPageDto {
 // Information Tag types
 export interface InformationTagDto {
   id: string;
-  name: string;
+  label: string;
   creationTime: string;
 }
 
 export interface CreateInformationTagDto {
-  name: string;
+  label: string;
 }
 
 // Navigation Menu types
