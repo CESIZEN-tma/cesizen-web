@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useInformationPages } from '../../services/admin-service/hooks/useInformationPages';
+import { useInformationTags } from '../../services/admin-service/hooks/useInformationTags';
 import { DataTable, type Column } from '../../shared/components/DataTable';
 import { Modal } from '../../shared/components/Modal';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
@@ -11,28 +12,26 @@ import { RichTextEditor } from '../../services/admin-service/components/RichText
 import { MdArticle, MdEdit, MdDelete, MdAdd } from 'react-icons/md';
 import type { InformationPageDto, CreateInformationPageDto } from '../../services/admin-service/api/adminTypes';
 
+const emptyForm: CreateInformationPageDto = {
+  title: '',
+  description: '',
+  content: '',
+  contentType: 'html',
+  status: 'draft',
+  tagIds: [],
+};
+
 const InformationPages: React.FC = () => {
   const { pages, loading, create, update, delete: deletePage } = useInformationPages();
+  const { tags } = useInformationTags();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedPage, setSelectedPage] = useState<InformationPageDto | null>(null);
-  const [formData, setFormData] = useState<CreateInformationPageDto>({
-    title: '',
-    description: '',
-    content: '',
-    contentType: 'html',
-    status: 'draft',
-  });
+  const [formData, setFormData] = useState<CreateInformationPageDto>(emptyForm);
 
   const handleCreate = () => {
     setSelectedPage(null);
-    setFormData({
-      title: '',
-      description: '',
-      content: '',
-      contentType: 'html',
-      status: 'draft',
-    });
+    setFormData(emptyForm);
     setIsModalOpen(true);
   };
 
@@ -44,6 +43,7 @@ const InformationPages: React.FC = () => {
       content: page.content,
       contentType: page.contentType,
       status: page.status,
+      tagIds: page.tagIds ?? [],
     });
     setIsModalOpen(true);
   };
@@ -77,60 +77,56 @@ const InformationPages: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('fr-FR', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const toggleTag = (tagId: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      tagIds: prev.tagIds.includes(tagId)
+        ? prev.tagIds.filter((id) => id !== tagId)
+        : [...prev.tagIds, tagId],
+    }));
   };
 
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleString('fr-FR', {
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+
   const getStatusVariant = (status: string): 'success' | 'warning' | 'default' => {
-    switch (status) {
-      case 'published':
-        return 'success';
-      case 'draft':
-        return 'warning';
-      default:
-        return 'default';
-    }
+    if (status === 'published') return 'success';
+    if (status === 'draft') return 'warning';
+    return 'default';
   };
 
   const columns: Column<InformationPageDto>[] = [
-    {
-      label: 'Title',
-      key: 'title',
-      width: '30%',
-    },
+    { label: 'Title', key: 'title', width: '25%' },
     {
       label: 'Description',
       key: 'description',
       render: (value: string) => (
-        <span style={{
-          display: 'block',
-          maxWidth: '300px',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap'
-        }}>
+        <span style={{ display: 'block', maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {value}
         </span>
       ),
     },
     {
-      label: 'Content Type',
-      key: 'contentType',
-      render: (value: string) => <Badge variant="default">{value}</Badge>,
+      label: 'Tags',
+      key: 'tagIds',
+      render: (_: unknown, row: InformationPageDto) => {
+        const pageTags = tags.filter((t) => row.tagIds?.includes(t.id));
+        if (pageTags.length === 0) return <span style={{ color: 'var(--color-gray-400)' }}>—</span>;
+        return (
+          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {pageTags.map((t) => <Badge key={t.id} variant="default">{t.label}</Badge>)}
+          </div>
+        );
+      },
     },
     {
       label: 'Status',
       key: 'status',
       render: (value: string) => (
-        <Badge variant={getStatusVariant(value)}>
-          {value.charAt(0).toUpperCase() + value.slice(1)}
-        </Badge>
+        <Badge variant={getStatusVariant(value)}>{value.charAt(0).toUpperCase() + value.slice(1)}</Badge>
       ),
     },
     {
@@ -165,20 +161,10 @@ const InformationPages: React.FC = () => {
         getRowKey={(page) => page.id}
         actions={(page) => (
           <div style={{ display: 'flex', gap: '8px' }}>
-            <Button
-              variant="secondary"
-              size="small"
-              icon={MdEdit}
-              onClick={() => handleEdit(page)}
-            >
+            <Button variant="secondary" size="small" icon={MdEdit} onClick={() => handleEdit(page)}>
               Edit
             </Button>
-            <Button
-              variant="danger"
-              size="small"
-              icon={MdDelete}
-              onClick={() => handleDelete(page)}
-            >
+            <Button variant="danger" size="small" icon={MdDelete} onClick={() => handleDelete(page)}>
               Delete
             </Button>
           </div>
@@ -211,13 +197,7 @@ const InformationPages: React.FC = () => {
           />
 
           <div style={{ marginTop: '16px' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '8px',
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              color: 'var(--color-text)'
-            }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-text)' }}>
               Content
             </label>
             <RichTextEditor
@@ -234,8 +214,7 @@ const InformationPages: React.FC = () => {
             required
           >
             <option value="html">HTML</option>
-            <option value="text">Plain Text</option>
-            <option value="markdown">Markdown</option>
+            <option value="raw">Plain Text</option>
           </Select>
 
           <Select
@@ -246,8 +225,40 @@ const InformationPages: React.FC = () => {
           >
             <option value="draft">Draft</option>
             <option value="published">Published</option>
-            <option value="archived">Archived</option>
+            <option value="masked">Masked</option>
           </Select>
+
+          {tags.length > 0 && (
+            <div style={{ marginTop: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-text)' }}>
+                Tags
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {tags.map((tag) => {
+                  const selected = formData.tagIds.includes(tag.id);
+                  return (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      onClick={() => toggleTag(tag.id)}
+                      style={{
+                        padding: '4px 12px',
+                        borderRadius: 20,
+                        border: `1px solid ${selected ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                        background: selected ? 'var(--color-primary)' : 'transparent',
+                        color: selected ? '#fff' : 'var(--color-text)',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {tag.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
             <Button type="submit" variant="primary">

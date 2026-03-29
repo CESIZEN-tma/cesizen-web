@@ -46,6 +46,7 @@ export interface InformationPageDto {
   status: string;
   creationTime: string;
   updateTime?: string;
+  tagIds: string[];
 }
 
 export interface CreateInformationPageDto {
@@ -54,6 +55,7 @@ export interface CreateInformationPageDto {
   content: string;
   contentType: string;
   status: string;
+  tagIds: string[];
 }
 
 // Information Tag types
