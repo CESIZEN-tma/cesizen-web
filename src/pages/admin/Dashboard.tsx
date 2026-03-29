@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler } from 'chart.js';
+import { Line } from 'react-chartjs-2';
 import { Spinner } from '../../shared/components/Spinner';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler);
 import { adminApi } from '../../services/admin-service/api/adminApi';
 import {
   MdPeople,
@@ -170,7 +170,7 @@ const Dashboard: React.FC = () => {
         <div className="dashboard-header">
           <div>
             <h1>Dashboard</h1>
-            <p className="dashboard-subtitle">Overview of your CesiZen platform</p>
+            <p className="dashboard-subtitle">Overview of CesiZen</p>
           </div>
           <div className="dashboard-tabs">
             <button
@@ -196,7 +196,7 @@ const Dashboard: React.FC = () => {
               <p className="dashboard-section-title">Key metrics</p>
               <div className="dashboard-kpis">
 
-                <div className="kpi-card" onClick={() => navigate('/admin/users')}>
+                <div className="kpi-card" onClick={() => navigate('/users')}>
                   <div className="kpi-card-top">
                     <div className="kpi-icon" style={{ background: 'rgba(88, 204, 2, 0.12)' }}>
                       <Icon icon={MdPeople} size={22} color="#58cc02" />
@@ -215,7 +215,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="kpi-card" onClick={() => navigate('/admin/quizzes')}>
+                <div className="kpi-card" onClick={() => navigate('/quizzes')}>
                   <div className="kpi-card-top">
                     <div className="kpi-icon" style={{ background: 'rgba(206, 130, 255, 0.12)' }}>
                       <Icon icon={MdQuiz} size={22} color="#ce82ff" />
@@ -234,7 +234,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="kpi-card" onClick={() => navigate('/admin/pages')}>
+                <div className="kpi-card" onClick={() => navigate('/pages')}>
                   <div className="kpi-card-top">
                     <div className="kpi-icon" style={{ background: 'rgba(255, 150, 0, 0.12)' }}>
                       <Icon icon={MdArticle} size={22} color="#ff9600" />
@@ -253,7 +253,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="kpi-card" onClick={() => navigate('/admin/administrators')}>
+                <div className="kpi-card" onClick={() => navigate('/administrators')}>
                   <div className="kpi-card-top">
                     <div className="kpi-icon" style={{ background: 'rgba(28, 176, 246, 0.12)' }}>
                       <Icon icon={MdPerson} size={22} color="#1cb0f6" />
@@ -277,7 +277,7 @@ const Dashboard: React.FC = () => {
               <p className="dashboard-section-title">Content & configuration</p>
               <div className="dashboard-secondary">
 
-                <div className="secondary-card" onClick={() => navigate('/admin/configurations')}>
+                <div className="secondary-card" onClick={() => navigate('/configurations')}>
                   <div className="secondary-icon" style={{ background: 'rgba(88, 204, 2, 0.12)' }}>
                     <Icon icon={MdSettings} size={20} color="#58cc02" />
                   </div>
@@ -288,7 +288,7 @@ const Dashboard: React.FC = () => {
                   <Icon icon={MdArrowForward} size={18} color="var(--color-gray-400)" />
                 </div>
 
-                <div className="secondary-card" onClick={() => navigate('/admin/tags')}>
+                <div className="secondary-card" onClick={() => navigate('/tags')}>
                   <div className="secondary-icon" style={{ background: 'rgba(255, 150, 0, 0.12)' }}>
                     <Icon icon={MdLabel} size={20} color="#ff9600" />
                   </div>
@@ -299,7 +299,7 @@ const Dashboard: React.FC = () => {
                   <Icon icon={MdArrowForward} size={18} color="var(--color-gray-400)" />
                 </div>
 
-                <div className="secondary-card" onClick={() => navigate('/admin/menus')}>
+                <div className="secondary-card" onClick={() => navigate('/menus')}>
                   <div className="secondary-icon" style={{ background: 'rgba(28, 176, 246, 0.12)' }}>
                     <Icon icon={MdMenu} size={20} color="#1cb0f6" />
                   </div>
@@ -318,7 +318,7 @@ const Dashboard: React.FC = () => {
               <div className="activity-card">
                 <div className="activity-card-header">
                   <h3>Recent activity</h3>
-                  <Link to="/admin/logs">View all logs →</Link>
+                  <Link to="/logs">View all logs →</Link>
                 </div>
                 <div className="activity-list">
                   {data.recentLogs.length === 0 ? (
@@ -433,10 +433,10 @@ const Dashboard: React.FC = () => {
                 </span>
               </div>
               <div className="chart-body" style={{ height: 260 }}>
-                <Bar
+                <Line
                   data={{
                     labels: registrationsTimeline.map((d) => d.date),
-                    datasets: [{ label: 'Registrations', data: registrationsTimeline.map((d) => d.count), backgroundColor: '#58cc02' }],
+                    datasets: [{ label: 'Registrations', data: registrationsTimeline.map((d) => d.count), borderColor: '#58cc02', backgroundColor: 'rgba(88,204,2,0.1)', fill: true, tension: 0.3 }],
                   }}
                   options={{ responsive: true, maintainAspectRatio: false }}
                 />
@@ -451,10 +451,10 @@ const Dashboard: React.FC = () => {
                 </span>
               </div>
               <div className="chart-body" style={{ height: 260 }}>
-                <Bar
+                <Line
                   data={{
                     labels: configurationsTimeline.map((d) => d.date),
-                    datasets: [{ label: 'Configurations', data: configurationsTimeline.map((d) => d.count), backgroundColor: '#1cb0f6' }],
+                    datasets: [{ label: 'Configurations', data: configurationsTimeline.map((d) => d.count), borderColor: '#1cb0f6', backgroundColor: 'rgba(28,176,246,0.1)', fill: true, tension: 0.3 }],
                   }}
                   options={{ responsive: true, maintainAspectRatio: false }}
                 />

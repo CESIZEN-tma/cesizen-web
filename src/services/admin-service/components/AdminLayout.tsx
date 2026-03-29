@@ -38,16 +38,16 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { path: '/admin', label: 'Dashboard', icon: MdDashboard },
-  { path: '/admin/administrators', label: 'Administrators', icon: MdPerson },
-  { path: '/admin/users', label: 'Users', icon: MdPeople },
-  { path: '/admin/pages', label: 'Information Pages', icon: MdArticle },
-  { path: '/admin/tags', label: 'Information Tags', icon: MdLabel },
-  { path: '/admin/menus', label: 'Navigation Menus', icon: MdMenuIcon },
-  { path: '/admin/configurations', label: 'Configurations', icon: MdSettings },
-  { path: '/admin/quizzes', label: 'Quizzes', icon: MdQuiz },
-  { path: '/admin/logs', label: 'Admin Logs', icon: MdHistory },
-  { path: '/admin/sessions', label: 'Sessions', icon: MdDevices },
+  { path: '/', label: 'Dashboard', icon: MdDashboard },
+  { path: '/administrators', label: 'Administrators', icon: MdPerson },
+  { path: '/users', label: 'Users', icon: MdPeople },
+  { path: '/pages', label: 'Information Pages', icon: MdArticle },
+  { path: '/tags', label: 'Information Tags', icon: MdLabel },
+  { path: '/menus', label: 'Navigation Menus', icon: MdMenuIcon },
+  { path: '/configurations', label: 'Configurations', icon: MdSettings },
+  { path: '/quizzes', label: 'Quizzes', icon: MdQuiz },
+  { path: '/logs', label: 'Admin Logs', icon: MdHistory },
+  { path: '/sessions', label: 'Sessions', icon: MdDevices },
 ];
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {

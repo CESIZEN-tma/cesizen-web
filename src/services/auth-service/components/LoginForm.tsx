@@ -68,7 +68,7 @@ const LoginForm: React.FC = () => {
       try {
         const token = localStorage.getItem('accessToken');
         const decoded = token ? jwtDecode<JwtPayload>(token) : null;
-        navigate(decoded?.role === 'Administrator' ? '/admin' : '/');
+        navigate('/');
       } catch {
         navigate('/');
       }
