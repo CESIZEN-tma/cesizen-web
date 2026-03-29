@@ -22,7 +22,8 @@ import {
 } from 'react-icons/md';
 import '../../services/admin-service/css/dashboard.css';
 import Icon from '../../shared/components/Icon';
-import type { AdminLogDto, GetUserDto, ConfigurationDto } from '../../services/admin-service/api/adminTypes';
+import PagesGraph from '../../services/admin-service/components/PagesGraph';
+import type { AdminLogDto, GetUserDto, ConfigurationDto, InformationPageDto, InformationTagDto } from '../../services/admin-service/api/adminTypes';
 
 interface DashboardData {
   totalUsers: number;
@@ -39,6 +40,8 @@ interface DashboardData {
   recentLogs: AdminLogDto[];
   allUsers: GetUserDto[];
   allConfigurations: ConfigurationDto[];
+  allPages: InformationPageDto[];
+  allTagsList: InformationTagDto[];
 }
 
 const ACTION_COLORS: Record<string, string> = {
@@ -129,6 +132,8 @@ const Dashboard: React.FC = () => {
             .slice(0, 8),
           allUsers: userList,
           allConfigurations: configs.data,
+          allPages: pages.data,
+          allTagsList: tags.data,
         });
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
@@ -458,6 +463,18 @@ const Dashboard: React.FC = () => {
                   }}
                   options={{ responsive: true, maintainAspectRatio: false }}
                 />
+              </div>
+            </div>
+
+            <div className="chart-card">
+              <div className="chart-card-header">
+                <h3>Pages &amp; tags graph</h3>
+                <span className="chart-badge" style={{ background: 'rgba(206,130,255,0.12)', color: '#8800cc' }}>
+                  {data.allPages.length} pages · {data.allTagsList.length} tags
+                </span>
+              </div>
+              <div className="chart-body">
+                <PagesGraph pages={data.allPages} tags={data.allTagsList} />
               </div>
             </div>
 
