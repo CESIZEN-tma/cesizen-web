@@ -6,11 +6,11 @@ import { Modal } from '../../shared/components/Modal';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { Button } from '../../shared/components/Button';
 import { Badge } from '../../shared/components/Badge';
-import { MdQuiz, MdEdit, MdDelete, MdAdd } from 'react-icons/md';
+import { MdQuiz, MdEdit, MdDelete, MdAdd, MdToggleOn, MdToggleOff } from 'react-icons/md';
 import type { QuizzDto, CreateQuizzDto } from '../../services/admin-service/api/adminTypes';
 
 const Quizzes: React.FC = () => {
-  const { quizzes, loading, create, updateFull, delete: deleteQuiz, fetchById } = useQuizzes();
+  const { quizzes, loading, create, updateFull, delete: deleteQuiz, setActive, fetchById } = useQuizzes();
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedQuiz, setSelectedQuiz] = useState<QuizzDto | null>(null);
@@ -125,6 +125,14 @@ const Quizzes: React.FC = () => {
         getRowKey={(quiz) => quiz.id}
         actions={(quiz) => (
           <div style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              variant="secondary"
+              size="small"
+              icon={quiz.active ? MdToggleOn : MdToggleOff}
+              onClick={() => setActive(quiz.id, !quiz.active)}
+            >
+              {quiz.active ? 'Désactiver' : 'Activer'}
+            </Button>
             <Button
               variant="secondary"
               size="small"

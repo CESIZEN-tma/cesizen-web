@@ -82,6 +82,18 @@ export function useQuizzes() {
     }
   }, [fetchAll]);
 
+  const setActive = useCallback(async (id: string, active: boolean) => {
+    try {
+      await adminApi.quizzes.setActive(id, active);
+      showSuccess(active ? 'Quiz activé' : 'Quiz désactivé');
+      await fetchAll();
+    } catch (err: any) {
+      const message = err.response?.data?.error || 'Failed to update quiz status';
+      showError(message);
+      throw err;
+    }
+  }, [fetchAll]);
+
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
@@ -94,6 +106,7 @@ export function useQuizzes() {
     update,
     updateFull,
     delete: deleteQuiz,
+    setActive,
     fetchById,
     refresh: fetchAll,
   };

@@ -44,6 +44,7 @@ export interface InformationPageDto {
   content: string;
   contentType: string;
   status: string;
+  active: boolean;
   creationTime: string;
   updateTime?: string;
   tagIds: string[];
@@ -55,6 +56,7 @@ export interface CreateInformationPageDto {
   content: string;
   contentType: string;
   status: string;
+  active: boolean;
   tagIds: string[];
 }
 
@@ -72,16 +74,19 @@ export interface CreateInformationTagDto {
 // Navigation Menu types
 export interface NavigationMenuDto {
   id: string;
+  parentId?: string | null;
   position: number;
   label: string;
-  url: string;
+  url?: string | null;
   creationTime: string;
+  children: NavigationMenuDto[];
 }
 
 export interface CreateNavigationMenuDto {
+  parentId?: string | null;
   position: number;
   label: string;
-  url: string;
+  url?: string | null;
 }
 
 // Configuration types

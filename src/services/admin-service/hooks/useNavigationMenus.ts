@@ -60,10 +60,10 @@ export function useNavigationMenus() {
     }
   }, [fetchAll]);
 
-  const updatePositions = useCallback(async (reorderedMenus: NavigationMenuDto[]) => {
+  const updatePositions = useCallback(async (positions: { id: string; position: number }[]) => {
     try {
-      setMenus(reorderedMenus);
-      await adminApi.menus.updatePositions(reorderedMenus);
+      await adminApi.menus.updatePositions(positions);
+      await fetchAll();
       showSuccess('Menu order updated successfully');
     } catch (err: any) {
       const message = err.response?.data?.error || 'Failed to update menu positions';

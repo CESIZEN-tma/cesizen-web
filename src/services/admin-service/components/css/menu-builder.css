@@ -31,6 +31,28 @@
   gap: 12px;
 }
 
+.menu-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.menu-collapse-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.menu-collapse-btn:hover {
+  background-color: var(--color-gray-100);
+}
+
 .menu-item {
   display: flex;
   align-items: center;

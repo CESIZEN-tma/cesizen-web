@@ -1,43 +1,66 @@
 import React, { useState } from 'react';
 import { useNavigationMenus } from '../../services/admin-service/hooks/useNavigationMenus';
+import { useInformationPages } from '../../services/admin-service/hooks/useInformationPages';
 import { MenuBuilder } from '../../services/admin-service/components/MenuBuilder';
 import { Modal } from '../../shared/components/Modal';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { Button } from '../../shared/components/Button';
 import { Input } from '../../shared/components/Input';
+import { Select } from '../../shared/components/Select';
 import { Spinner } from '../../shared/components/Spinner';
 import type { NavigationMenuDto, CreateNavigationMenuDto } from '../../services/admin-service/api/adminTypes';
 
+const INFO_PAGE_SCHEME = 'cesizen://info-page/';
+
+function pageIdFromUrl(url?: string | null): string {
+  if (!url || !url.startsWith(INFO_PAGE_SCHEME)) return '';
+  return url.slice(INFO_PAGE_SCHEME.length);
+}
+
+const emptyForm = (): CreateNavigationMenuDto => ({
+  parentId: null,
+  label: '',
+  url: null,
+  position: 1,
+});
+
 const NavigationMenus: React.FC = () => {
   const { menus, loading, create, update, delete: deleteMenu, updatePositions } = useNavigationMenus();
+  const { pages } = useInformationPages();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState<NavigationMenuDto | null>(null);
-  const [formData, setFormData] = useState<CreateNavigationMenuDto>({
-    label: '',
-    url: '',
-    position: 1,
-  });
+  const [formData, setFormData] = useState<CreateNavigationMenuDto>(emptyForm());
+  const [selectedPageId, setSelectedPageId] = useState<string>('');
 
-  const handleCreate = () => {
-    setSelectedMenu(null);
-    setFormData({
-      label: '',
-      url: '',
-      position: menus.length + 1,
-    });
-    setIsModalOpen(true);
-  };
+  const rootMenus = menus.filter((m) => !m.parentId);
 
-  const handleEdit = (menu: NavigationMenuDto) => {
+  // Only Published+active pages available as link targets
+  const publishedPages = pages.filter((p) => p.active !== false && p.status.toLowerCase() === 'published');
+
+  const openModal = (form: CreateNavigationMenuDto, menu: NavigationMenuDto | null, pageId: string) => {
     setSelectedMenu(menu);
-    setFormData({
-      label: menu.label,
-      url: menu.url,
-      position: menu.position,
-    });
+    setFormData(form);
+    setSelectedPageId(pageId);
     setIsModalOpen(true);
   };
+
+  const handleCreate = () =>
+    openModal({ ...emptyForm(), position: menus.length + 1 }, null, '');
+
+  const handleCreateChild = (parent: NavigationMenuDto) =>
+    openModal(
+      { parentId: parent.id, label: '', url: null, position: (parent.children?.length ?? 0) + 1 },
+      null,
+      ''
+    );
+
+  const handleEdit = (menu: NavigationMenuDto) =>
+    openModal(
+      { parentId: menu.parentId ?? null, label: menu.label, url: menu.url ?? null, position: menu.position },
+      menu,
+      pageIdFromUrl(menu.url)
+    );
 
   const handleDelete = (menu: NavigationMenuDto) => {
     setSelectedMenu(menu);
@@ -47,13 +70,19 @@ const NavigationMenus: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const url = selectedPageId ? `${INFO_PAGE_SCHEME}${selectedPageId}` : null;
+      const payload: CreateNavigationMenuDto = {
+        ...formData,
+        url,
+        parentId: formData.parentId || null,
+      };
       if (selectedMenu) {
-        await update(selectedMenu.id, formData);
+        await update(selectedMenu.id, payload);
       } else {
-        await create(formData);
+        await create(payload);
       }
       setIsModalOpen(false);
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };
@@ -63,15 +92,25 @@ const NavigationMenus: React.FC = () => {
     try {
       await deleteMenu(selectedMenu.id);
       setIsDeleteDialogOpen(false);
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };
 
-  const handleReorder = async (reorderedMenus: NavigationMenuDto[]) => {
+  const handleReorderRoots = async (reorderedRoots: NavigationMenuDto[]) => {
+    const positions = reorderedRoots.map((m, i) => ({ id: m.id, position: i + 1 }));
     try {
-      await updatePositions(reorderedMenus);
-    } catch (err) {
+      await updatePositions(positions);
+    } catch {
+      // Error handled by hook
+    }
+  };
+
+  const handleReorderChildren = async (parentId: string, reorderedChildren: NavigationMenuDto[]) => {
+    const positions = reorderedChildren.map((m, i) => ({ id: m.id, position: i + 1 }));
+    try {
+      await updatePositions(positions);
+    } catch {
       // Error handled by hook
     }
   };
@@ -84,6 +123,11 @@ const NavigationMenus: React.FC = () => {
     );
   }
 
+  const isChild = !!formData.parentId;
+  const parentLabel = formData.parentId
+    ? rootMenus.find((m) => m.id === formData.parentId)?.label
+    : null;
+
   return (
     <div className="admin-page">
       <div className="admin-page-header">
@@ -91,57 +135,80 @@ const NavigationMenus: React.FC = () => {
       </div>
 
       <p style={{ color: 'var(--color-gray-600)', marginBottom: '24px' }}>
-        Drag and drop menu items to reorder them. The order will be saved automatically.
+        Drag and drop to reorder. Cliquer sur le chevron pour replier/déplier un menu.
       </p>
 
       <MenuBuilder
         menus={menus}
-        onReorder={handleReorder}
+        onReorderRoots={handleReorderRoots}
+        onReorderChildren={handleReorderChildren}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onCreate={handleCreate}
+        onCreateChild={handleCreateChild}
       />
 
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={selectedMenu ? 'Edit Menu Item' : 'Create Menu Item'}
+        title={
+          selectedMenu
+            ? 'Modifier le menu'
+            : parentLabel
+            ? `Nouveau sous-menu dans "${parentLabel}"`
+            : 'Créer un menu'
+        }
       >
         <form onSubmit={handleSubmit}>
+          {!isChild && (
+            <Select
+              label="Parent"
+              value={formData.parentId ?? ''}
+              onChange={(e) =>
+                setFormData({ ...formData, parentId: e.target.value || null })
+              }
+            >
+              <option value="">Aucun (menu racine)</option>
+              {rootMenus.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </Select>
+          )}
+
           <Input
             label="Label"
             type="text"
             value={formData.label}
             onChange={(e) => setFormData({ ...formData, label: e.target.value })}
             required
-            placeholder="Enter menu label (e.g., About Us)"
+            placeholder="Ex : À propos"
           />
 
-          <Input
-            label="URL"
-            type="text"
-            value={formData.url}
-            onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-            required
-            placeholder="Enter URL (e.g., /about or https://example.com)"
-          />
-
-          <Input
-            label="Position"
-            type="number"
-            value={formData.position}
-            onChange={(e) => setFormData({ ...formData, position: parseInt(e.target.value) })}
-            required
-            min={1}
-            placeholder="Enter position (1, 2, 3...)"
-          />
+          <Select
+            label="Page liée (optionnel)"
+            value={selectedPageId}
+            onChange={(e) => setSelectedPageId(e.target.value)}
+          >
+            <option value="">Aucune page</option>
+            {publishedPages.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title}
+              </option>
+            ))}
+          </Select>
 
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
             <Button type="submit" variant="primary">
-              {selectedMenu ? 'Update Menu' : 'Create Menu'}
+              {selectedMenu ? 'Modifier' : 'Créer'}
             </Button>
-            <Button type="button" variant="secondary" onClick={() => setIsModalOpen(false)}>
-              Cancel
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Annuler
             </Button>
           </div>
         </form>
@@ -149,10 +216,14 @@ const NavigationMenus: React.FC = () => {
 
       <ConfirmDialog
         isOpen={isDeleteDialogOpen}
-        title="Delete Menu Item"
-        message={`Are you sure you want to delete "${selectedMenu?.label}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
+        title="Supprimer le menu"
+        message={`Supprimer "${selectedMenu?.label}" ?${
+          selectedMenu?.children?.length
+            ? ` Ses ${selectedMenu.children.length} sous-menu(s) seront aussi supprimés.`
+            : ''
+        }`}
+        confirmText="Supprimer"
+        cancelText="Annuler"
         variant="danger"
         onConfirm={handleConfirmDelete}
         onCancel={() => setIsDeleteDialogOpen(false)}

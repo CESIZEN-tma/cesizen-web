@@ -9,7 +9,7 @@ import { Input } from '../../shared/components/Input';
 import { Select } from '../../shared/components/Select';
 import { Badge } from '../../shared/components/Badge';
 import { RichTextEditor } from '../../services/admin-service/components/RichTextEditor';
-import { MdArticle, MdEdit, MdDelete, MdAdd } from 'react-icons/md';
+import { MdArticle, MdEdit, MdDelete, MdAdd, MdToggleOn, MdToggleOff } from 'react-icons/md';
 import type { InformationPageDto, CreateInformationPageDto } from '../../services/admin-service/api/adminTypes';
 
 const emptyForm: CreateInformationPageDto = {
@@ -18,6 +18,7 @@ const emptyForm: CreateInformationPageDto = {
   content: '',
   contentType: 'html',
   status: 'draft',
+  active: true,
   tagIds: [],
 };
 
@@ -43,9 +44,26 @@ const InformationPages: React.FC = () => {
       content: page.content,
       contentType: page.contentType,
       status: page.status,
+      active: page.active,
       tagIds: page.tagIds ?? [],
     });
     setIsModalOpen(true);
+  };
+
+  const handleToggleActive = async (page: InformationPageDto) => {
+    try {
+      await update(page.id, {
+        title: page.title,
+        description: page.description,
+        content: page.content,
+        contentType: page.contentType,
+        status: page.status,
+        active: !page.active,
+        tagIds: page.tagIds ?? [],
+      });
+    } catch {
+      // Error handled by hook
+    }
   };
 
   const handleDelete = (page: InformationPageDto) => {
@@ -130,6 +148,13 @@ const InformationPages: React.FC = () => {
       ),
     },
     {
+      label: 'Active',
+      key: 'active',
+      render: (value: boolean) => (
+        <Badge variant={value ? 'success' : 'default'}>{value ? 'Active' : 'Inactive'}</Badge>
+      ),
+    },
+    {
       label: 'Created',
       key: 'creationTime',
       render: (value: string) => formatDate(value),
@@ -161,6 +186,14 @@ const InformationPages: React.FC = () => {
         getRowKey={(page) => page.id}
         actions={(page) => (
           <div style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              variant="secondary"
+              size="small"
+              icon={page.active ? MdToggleOn : MdToggleOff}
+              onClick={() => handleToggleActive(page)}
+            >
+              {page.active ? 'Désactiver' : 'Activer'}
+            </Button>
             <Button variant="secondary" size="small" icon={MdEdit} onClick={() => handleEdit(page)}>
               Edit
             </Button>
@@ -226,6 +259,15 @@ const InformationPages: React.FC = () => {
             <option value="draft">Draft</option>
             <option value="published">Published</option>
             <option value="masked">Masked</option>
+          </Select>
+
+          <Select
+            label="Active"
+            value={formData.active ? 'true' : 'false'}
+            onChange={(e) => setFormData({ ...formData, active: e.target.value === 'true' })}
+          >
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
           </Select>
 
           {tags.length > 0 && (

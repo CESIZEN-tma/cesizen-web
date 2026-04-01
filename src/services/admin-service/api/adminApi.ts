@@ -66,8 +66,8 @@ export const adminApi = {
     update: (id: string, dto: Partial<CreateNavigationMenuDto>) =>
       apiClient.put(`${ADMIN_ENDPOINTS.menus}/${id}`, dto),
     delete: (id: string) => apiClient.delete(`${ADMIN_ENDPOINTS.menus}/${id}`),
-    updatePositions: (menus: NavigationMenuDto[]) =>
-      apiClient.put(`${ADMIN_ENDPOINTS.menus}/positions`, menus),
+    updatePositions: (positions: { id: string; position: number }[]) =>
+      apiClient.put(`${ADMIN_ENDPOINTS.menus}/positions`, positions),
   },
 
   configurations: {
@@ -88,6 +88,8 @@ export const adminApi = {
     updateFull: (id: string, dto: CreateQuizzDto) =>
       apiClient.put(`${ADMIN_ENDPOINTS.quizzes}/${id}/full`, dto),
     delete: (id: string) => apiClient.delete(`${ADMIN_ENDPOINTS.quizzes}/${id}`),
+    setActive: (id: string, active: boolean) =>
+      apiClient.patch(`${ADMIN_ENDPOINTS.quizzes}/${id}/active`, { active }),
   },
 
   logs: {
