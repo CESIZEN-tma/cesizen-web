@@ -1,9 +1,15 @@
 import React, { useState, type FormEvent } from 'react';
 import { HiArrowRight } from 'react-icons/hi2';
+import { jwtDecode } from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
 import '../css/login-form.css';
 import { Input } from '../../../shared/components/Input';
 import { Button } from '../../../shared/components/Button';
 import { useAuth } from '../../../shared/hooks/useAuth';
+
+interface JwtPayload {
+  role: string;
+}
 
 interface LoginFormData {
   email: string;
@@ -17,6 +23,7 @@ interface LoginFormErrors {
 
 const LoginForm: React.FC = () => {
   const { login, loading } = useAuth();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -56,9 +63,15 @@ const LoginForm: React.FC = () => {
 
     if (!validateForm()) return;
 
-    const success = await login(formData);
-    if (success) {
-      window.location.href = "/";
+    const result = await login(formData);
+    if (result) {
+      try {
+        const token = localStorage.getItem('accessToken');
+        const decoded = token ? jwtDecode<JwtPayload>(token) : null;
+        navigate('/');
+      } catch {
+        navigate('/');
+      }
     } else {
       setErrors({ email: 'Email ou mot de passe incorrect' });
     }

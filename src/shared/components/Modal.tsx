@@ -1,7 +1,7 @@
 import React, { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import './styles/modal.css';
-import { Icon } from './Icon';
+import Icon from '../../shared/components/Icon';
 import { IoMdClose } from 'react-icons/io';
 
 interface ModalProps {

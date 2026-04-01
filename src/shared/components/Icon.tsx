@@ -13,7 +13,7 @@ export type IconProps = {
 const Icon = ({
   icon: IconComponent,
   size = 24,
-  color = "#000",
+  color = "currentColor",
   className = "",
   onClick,
   rounded = false,

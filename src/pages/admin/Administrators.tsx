@@ -122,9 +122,11 @@ const Administrators: React.FC = () => {
     <div className="admin-page">
       <div className="admin-page-header">
         <h1>Administrators</h1>
-        <Button variant="primary" icon={MdAdd} onClick={handleOpenCreate}>
-          Create Administrator
-        </Button>
+        {!loading && administrators.length > 0 && (
+          <Button variant="primary" icon={MdAdd} onClick={handleOpenCreate}>
+            Create Administrator
+          </Button>
+        )}
       </div>
 
       <DataTable

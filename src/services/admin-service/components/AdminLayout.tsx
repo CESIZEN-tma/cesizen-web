@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { useAuth } from '../../../shared/hooks/useAuth';
-import { Icon } from '../../../shared/components/Icon';
 import {
   MdDashboard,
   MdPeople,
@@ -13,11 +12,14 @@ import {
   MdSettings,
   MdQuiz,
   MdHistory,
-  MdDevices,
   MdLogout,
   MdClose,
+  MdLightMode,
+  MdDarkMode,
 } from 'react-icons/md';
 import '../css/admin-layout.css';
+import Icon from '../../../shared/components/Icon';
+import { useCurrentTheme, toggleTheme } from '../../../shared/hooks/useTheme';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -35,22 +37,22 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { path: '/admin', label: 'Dashboard', icon: MdDashboard },
-  { path: '/admin/administrators', label: 'Administrators', icon: MdPerson },
-  { path: '/admin/users', label: 'Users', icon: MdPeople },
-  { path: '/admin/pages', label: 'Information Pages', icon: MdArticle },
-  { path: '/admin/tags', label: 'Information Tags', icon: MdLabel },
-  { path: '/admin/menus', label: 'Navigation Menus', icon: MdMenuIcon },
-  { path: '/admin/configurations', label: 'Configurations', icon: MdSettings },
-  { path: '/admin/quizzes', label: 'Quizzes', icon: MdQuiz },
-  { path: '/admin/logs', label: 'Admin Logs', icon: MdHistory },
-  { path: '/admin/sessions', label: 'Sessions', icon: MdDevices },
+  { path: '/', label: 'Dashboard', icon: MdDashboard },
+  { path: '/administrators', label: 'Administrators', icon: MdPerson },
+  { path: '/users', label: 'Users', icon: MdPeople },
+  { path: '/pages', label: 'Information Pages', icon: MdArticle },
+  { path: '/tags', label: 'Information Tags', icon: MdLabel },
+  { path: '/menus', label: 'Navigation Menus', icon: MdMenuIcon },
+  { path: '/configurations', label: 'Configurations', icon: MdSettings },
+  { path: '/quizzes', label: 'Quizzes', icon: MdQuiz },
+  { path: '/logs', label: 'Admin Logs', icon: MdHistory },
 ];
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const { logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const currentTheme = useCurrentTheme();
 
   const getAdminEmail = () => {
     try {
@@ -109,13 +111,22 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       <div className="admin-main">
         {/* Header */}
         <header className="admin-header">
-          <button
-            className="admin-mobile-toggle"
-            onClick={toggleSidebar}
-            aria-label="Toggle menu"
-          >
-            <Icon icon={MdMenuIcon} size={24} />
-          </button>
+          <div className="admin-header-left">
+            <button
+              className="admin-mobile-toggle"
+              onClick={toggleSidebar}
+              aria-label="Toggle menu"
+            >
+              <Icon icon={MdMenuIcon} size={24} />
+            </button>
+            <button
+              className="admin-theme-toggle"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+            >
+              <Icon icon={currentTheme === 'dark' ? MdLightMode : MdDarkMode} size={22} />
+            </button>
+          </div>
 
           <div className="admin-header-right">
             <span className="admin-user-email">{getAdminEmail()}</span>

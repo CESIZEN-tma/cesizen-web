@@ -23,8 +23,9 @@ export interface GetUserDto {
   firstName: string;
   lastName: string;
   memberSince: string;
-  thumbnailUrl?: string;
-  active?: boolean;
+  active: boolean;
+  accountActivated: boolean;
+  lockedUntil?: string;
 }
 
 // Session types
@@ -43,8 +44,10 @@ export interface InformationPageDto {
   content: string;
   contentType: string;
   status: string;
+  active: boolean;
   creationTime: string;
   updateTime?: string;
+  tagIds: string[];
 }
 
 export interface CreateInformationPageDto {
@@ -53,32 +56,37 @@ export interface CreateInformationPageDto {
   content: string;
   contentType: string;
   status: string;
+  active: boolean;
+  tagIds: string[];
 }
 
 // Information Tag types
 export interface InformationTagDto {
   id: string;
-  name: string;
+  label: string;
   creationTime: string;
 }
 
 export interface CreateInformationTagDto {
-  name: string;
+  label: string;
 }
 
 // Navigation Menu types
 export interface NavigationMenuDto {
   id: string;
+  parentId?: string | null;
   position: number;
   label: string;
-  url: string;
+  url?: string | null;
   creationTime: string;
+  children: NavigationMenuDto[];
 }
 
 export interface CreateNavigationMenuDto {
+  parentId?: string | null;
   position: number;
   label: string;
-  url: string;
+  url?: string | null;
 }
 
 // Configuration types
@@ -93,6 +101,7 @@ export interface ConfigurationDto {
   difficulty: number;
   objective: string;
   guidanceType: string;
+  creationTime: string;
 }
 
 export interface CreateConfigurationDto {
@@ -112,12 +121,28 @@ export interface QuizzDto {
   id: string;
   nom: string;
   active: boolean;
+  questionCount: number;
   questions?: QuestionDto[];
 }
 
 export interface CreateQuizzDto {
   nom: string;
   active: boolean;
+  questions?: CreateQuestionForQuizDto[];
+}
+
+export interface CreateQuestionForQuizDto {
+  text: string;
+  position: number;
+  options?: CreateResponseOptionForQuestionDto[];
+}
+
+export interface CreateResponseOptionForQuestionDto {
+  label: string;
+  position: number;
+  targetedField: string;
+  operation: string;
+  value: string;
 }
 
 export interface QuestionDto {
@@ -125,7 +150,7 @@ export interface QuestionDto {
   text: string;
   position: number;
   idQuizz: string;
-  responsesOptions?: ResponseOptionDto[];
+  options?: ResponseOptionDto[];
 }
 
 export interface CreateQuestionDto {

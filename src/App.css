@@ -1,27 +1,7 @@
-#root {
-  max-width: 1280px;
-  width: 100vw;
-  height: auto;
-  text-align: center;
-  margin: 0;
-}
-
-.debug-color{
+.debug-color {
   background-color: blue !important;
 }
 
-.pointer-none{
+.pointer-none {
   cursor: default !important;
-}
-
-button {
-  outline: none;
-  border: none;
-  background: none; 
-  cursor: pointer;
-}
-
-button:focus {
-  outline: none;
-  box-shadow: none;
 }

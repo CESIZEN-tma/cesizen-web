@@ -3,7 +3,6 @@ import { jwtDecode } from "jwt-decode";
 import { apiClient } from "../configs/axiosConfig";
 
 const TOKEN_KEY = "accessToken";
-const REFRESH_TOKEN_KEY = "refreshToken";
 
 interface LoginCredentials {
   email: string;
@@ -12,7 +11,6 @@ interface LoginCredentials {
 
 interface LoginResponse {
   accessToken: string;
-  refreshToken: string;
 }
 
 interface JwtPayload {
@@ -25,10 +23,8 @@ interface JwtPayload {
 export function useAuth() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
-
-  // Vérifier si l'utilisateur est connecté au chargement
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
@@ -44,6 +40,7 @@ export function useAuth() {
       setIsLoggedIn(false);
       setIsAdmin(false);
     }
+    setLoading(false);
   }, []);
 
   // Connexion
@@ -52,18 +49,23 @@ export function useAuth() {
       try {
         setLoading(true);
 
-        const response = await apiClient.post<LoginResponse>("/admin/login", {
+        const response = await apiClient.post<LoginResponse>("/admin/login/web", {
           email: credentials.email,
           password: credentials.password,
           device_info: "web",
         });
 
-        const { accessToken, refreshToken } = response.data;
-
-        // Stocker les tokens
+        const { accessToken } = response.data;
         localStorage.setItem(TOKEN_KEY, accessToken);
-        localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
         setIsLoggedIn(true);
+
+        try {
+          const decoded = jwtDecode<JwtPayload>(accessToken);
+          setIsAdmin(decoded.role === 'Administrator');
+        } catch {
+          setIsAdmin(false);
+        }
+
         return true;
       } catch (error) {
         console.error("Erreur lors de la connexion:", error);
@@ -76,12 +78,16 @@ export function useAuth() {
   );
 
   // Déconnexion
-  const logout = useCallback((): void => {
-    // Supprimer les tokens
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    window.location.href = "/"
-    setIsLoggedIn(false);
+  const logout = useCallback(async (): Promise<void> => {
+    try {
+      await apiClient.post("/admin/logout");
+    } catch {
+      // ignore errors — clear local state regardless
+    } finally {
+      localStorage.removeItem(TOKEN_KEY);
+      setIsLoggedIn(false);
+      window.location.href = "/";
+    }
   }, []);
 
   return {

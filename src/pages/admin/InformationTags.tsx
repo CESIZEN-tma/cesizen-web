@@ -24,7 +24,7 @@ const InformationTags: React.FC = () => {
 
   const handleOpenEdit = (tag: InformationTagDto) => {
     setSelectedTag(tag);
-    setTagName(tag.name);
+    setTagName(tag.label);
     setIsModalOpen(true);
   };
 
@@ -39,9 +39,9 @@ const InformationTags: React.FC = () => {
 
     try {
       if (selectedTag) {
-        await update(selectedTag.id, { name: tagName });
+        await update(selectedTag.id, { label: tagName });
       } else {
-        await create({ name: tagName });
+        await create({ label: tagName });
       }
       setIsModalOpen(false);
     } catch (err) {
@@ -70,7 +70,7 @@ const InformationTags: React.FC = () => {
   };
 
   const columns: Column<InformationTagDto>[] = [
-    { label: 'Name', key: 'name' },
+    { label: 'Name', key: 'label' },
     {
       label: 'Created',
       key: 'creationTime',
@@ -82,9 +82,11 @@ const InformationTags: React.FC = () => {
     <div className="admin-page">
       <div className="admin-page-header">
         <h1>Information Tags</h1>
-        <Button variant="primary" icon={MdAdd} onClick={handleOpenCreate}>
-          Create Tag
-        </Button>
+        {!loading && tags.length > 0 && (
+          <Button variant="primary" icon={MdAdd} onClick={handleOpenCreate}>
+            Create Tag
+          </Button>
+        )}
       </div>
 
       <DataTable
@@ -146,7 +148,7 @@ const InformationTags: React.FC = () => {
       <ConfirmDialog
         isOpen={isDeleteDialogOpen}
         title="Delete Tag"
-        message={`Are you sure you want to delete the tag "${selectedTag?.name}"? This action cannot be undone.`}
+        message={`Are you sure you want to delete the tag "${selectedTag?.label}"? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"

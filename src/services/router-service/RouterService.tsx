@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import type { RouteConfig } from "./types";
 import { publicRoutes } from "./routes/publicRoutes";
+import { adminRoutes } from "./routes/adminRoutes";
 
 const renderRoute = (route: RouteConfig) => {
   const { layout, component, path, header, footer } = route;
@@ -23,7 +24,7 @@ const renderRoute = (route: RouteConfig) => {
 };
 
 const RouterService = () => {
-  const allRoutes = [...publicRoutes];
+  const allRoutes = [...publicRoutes, ...adminRoutes];
 
   return (
     <BrowserRouter>
