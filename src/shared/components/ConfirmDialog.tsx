@@ -38,7 +38,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   const footer = (
     <>
-      <Button variant="ghost" onClick={onCancel}>
+      <Button variant="outline" onClick={onCancel}>
         {cancelText}
       </Button>
       <Button variant={getConfirmVariant()} onClick={onConfirm}>

@@ -160,7 +160,7 @@ const Administrators: React.FC = () => {
         title={selectedAdmin ? 'Edit Administrator' : 'Create Administrator'}
         footer={
           <>
-            <Button variant="ghost" onClick={() => setIsModalOpen(false)} disabled={formLoading}>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)} disabled={formLoading}>
               Cancel
             </Button>
             <Button variant="primary" onClick={handleSubmit} loading={formLoading}>

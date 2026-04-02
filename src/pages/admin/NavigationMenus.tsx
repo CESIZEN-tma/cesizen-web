@@ -106,7 +106,7 @@ const NavigationMenus: React.FC = () => {
     }
   };
 
-  const handleReorderChildren = async (parentId: string, reorderedChildren: NavigationMenuDto[]) => {
+  const handleReorderChildren = async (_parentId: string, reorderedChildren: NavigationMenuDto[]) => {
     const positions = reorderedChildren.map((m, i) => ({ id: m.id, position: i + 1 }));
     try {
       await updatePositions(positions);

@@ -172,7 +172,7 @@ const Configurations: React.FC = () => {
         size="large"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setIsModalOpen(false)} disabled={formLoading}>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)} disabled={formLoading}>
               Cancel
             </Button>
             <Button variant="primary" onClick={handleSubmit} loading={formLoading}>
@@ -263,12 +263,14 @@ const Configurations: React.FC = () => {
           <Select
             label="Guidance Type"
             value={formData.guidanceType}
-            onChange={(value) => setFormData((prev) => ({ ...prev, guidanceType: value }))}
-            options={guidanceTypeOptions}
+            onChange={(e) => setFormData((prev) => ({ ...prev, guidanceType: e.target.value }))}
             disabled={formLoading}
             required
-            fullWidth
-          />
+          >
+            {guidanceTypeOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </Select>
 
           <div>
             <label

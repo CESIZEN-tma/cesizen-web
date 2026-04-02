@@ -23,7 +23,7 @@ const AdminLogs: React.FC = () => {
     if (actionCode.includes('CREATE')) return 'success';
     if (actionCode.includes('UPDATE')) return 'info';
     if (actionCode.includes('DELETE')) return 'danger';
-    return 'default';
+    return 'warning';
   };
 
   const columns: Column<AdminLogDto>[] = [
