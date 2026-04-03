@@ -121,7 +121,7 @@ const Dashboard: React.FC = () => {
           lockedUsers: userList.filter((u) => u.lockedUntil && new Date(u.lockedUntil) > new Date()).length,
           totalAdmins: admins.data.length,
           totalPages: pages.data.length,
-          publishedPages: pages.data.filter((p: any) => p.status === 'Published').length,
+          publishedPages: pages.data.filter((p: any) => p.status.toLowerCase() === 'published').length,
           totalTags: tags.data.length,
           totalMenus: menus.data.length,
           totalConfigurations: configs.data.length,
