@@ -73,16 +73,16 @@ const PagesGraph: React.FC<Props> = ({ pages, tags }) => {
         graphData={graphData}
         backgroundColor="transparent"
         linkColor={() => LINK_COLOR}
-        linkWidth={1}
+        linkWidth={2}
         nodeCanvasObject={(node, ctx, globalScale) => {
           const n = node as GraphNode & { x: number; y: number };
           const isPage = n.type === 'page';
-          const radius = isPage ? 7 : 5;
+          const radius = isPage ? 5 :7;
           const color = isPage ? PAGE_COLOR : TAG_COLOR;
 
           // Glow
           ctx.beginPath();
-          ctx.arc(n.x, n.y, radius + 3, 0, 2 * Math.PI);
+          ctx.arc(n.x, n.y, radius + 2, 0, 2 * Math.PI);
           ctx.fillStyle = isPage ? 'rgba(88,204,2,0.12)' : 'rgba(28,176,246,0.12)';
           ctx.fill();
 
