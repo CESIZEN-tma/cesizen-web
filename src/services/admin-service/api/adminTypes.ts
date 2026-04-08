@@ -188,3 +188,22 @@ export interface AdminLogDto {
   creationTime: string;
   administratorId: string;
 }
+
+
+export interface LineageDto {
+  entityType: string,
+  entityId: string,
+  totalEvents: number,
+  events : LineageEvent[]
+}
+
+export interface LineageEvent {
+  step: number,
+  logId: string,
+  actionCode: string,
+  description: string,
+  occurredAt: Date,
+  administratorId: string,
+  administratorEmail: string,
+  administratorName: string
+}

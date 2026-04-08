@@ -1,0 +1,56 @@
+.lineage-node {
+  padding: 10px 14px;
+  background: var(--color-background);
+  border: 1.5px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  min-width: 210px;
+  user-select: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.lineage-node:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+}
+
+.lineage-node-action {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-primary);
+}
+
+.lineage-node-date {
+  font-size: 0.7rem;
+  color: var(--color-gray-500);
+  margin-top: 3px;
+}
+
+.lineage-node-details {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.75rem;
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lineage-node-details-row {
+  display: flex;
+  gap: 4px;
+}
+
+.lineage-node-details-row b {
+  color: var(--color-gray-600);
+  white-space: nowrap;
+}
+
+.lineage-node-log-id {
+  margin-top: 6px;
+  font-size: 0.68rem;
+  color: var(--color-gray-400);
+  font-family: monospace;
+}
