@@ -61,6 +61,12 @@
   max-width: 900px;
 }
 
+.modal-fullscreen {
+  width: 95vw;
+  height: 90vh;
+  max-width: none;
+}
+
 /* Modal Header */
 .modal-header {
   display: flex;

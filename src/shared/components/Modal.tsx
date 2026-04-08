@@ -10,7 +10,8 @@ interface ModalProps {
   title: string;
   children: ReactNode;
   footer?: ReactNode;
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large' | 'fullscreen';
+  bodyStyle?: React.CSSProperties;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -20,6 +21,7 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   footer,
   size = 'medium',
+  bodyStyle,
 }) => {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -64,7 +66,7 @@ export const Modal: React.FC<ModalProps> = ({
           </button>
         </div>
 
-        <div className="modal-body">{children}</div>
+        <div className="modal-body" style={bodyStyle}>{children}</div>
 
         {footer && <div className="modal-footer">{footer}</div>}
       </div>

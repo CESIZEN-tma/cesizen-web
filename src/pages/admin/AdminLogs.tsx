@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAdminLogs } from '../../services/admin-service/hooks/useAdminLogs';
 import { DataTable, type Column } from '../../shared/components/DataTable';
 import { Button } from '../../shared/components/Button';
 import { Badge } from '../../shared/components/Badge';
-import { MdHistory, MdRefresh } from 'react-icons/md';
+import { MdHistory, MdRefresh, MdAccountTree } from 'react-icons/md';
 import type { AdminLogDto } from '../../services/admin-service/api/adminTypes';
+import LineageModal from '../../services/admin-service/components/LineageModal';
 
 const AdminLogs: React.FC = () => {
   const { logs, loading, refresh } = useAdminLogs();
+  const [lineageTarget, setLineageTarget] = useState<{ entityType: string; entityId: string } | null>(null);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('fr-FR', {
@@ -79,7 +81,28 @@ const AdminLogs: React.FC = () => {
         emptyMessage="No admin logs found"
         emptyIcon={MdHistory}
         getRowKey={(log) => log.id}
+        actions={(log) =>
+          log.targetedEntityId ? (
+            <Button
+              variant="outline"
+              size="small"
+              icon={MdAccountTree}
+              onClick={() => setLineageTarget({ entityType: log.entityType, entityId: log.targetedEntityId! })}
+            >
+              Lineage
+            </Button>
+          ) : null
+        }
       />
+
+      {lineageTarget && (
+        <LineageModal
+          isOpen={!!lineageTarget}
+          onClose={() => setLineageTarget(null)}
+          entityType={lineageTarget.entityType}
+          entityId={lineageTarget.entityId}
+        />
+      )}
     </div>
   );
 };

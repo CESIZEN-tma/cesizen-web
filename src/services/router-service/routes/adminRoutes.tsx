@@ -3,7 +3,6 @@ import AdminLayout from "../../admin-service/components/AdminLayout";
 import { Spinner } from "../../../shared/components/Spinner";
 import type { RouteConfig } from "../types";
 import AdminGuard from "../../admin-service/components/AdminGuard";
-import Lineage from "../../../pages/admin/Lineage";
 
 const Dashboard = lazy(() => import("../../../pages/admin/Dashboard"));
 const Administrators = lazy(
@@ -94,11 +93,5 @@ export const adminRoutes: RouteConfig[] = [
     path: "/sessions",
     layout: null,
     component: <AdminPage component={<Sessions />} />,
-  },
-  {
-    name: "admin-data-lineage",
-    path: "/data-lineage",
-    layout: null,
-    component: <AdminPage component={<Lineage />} />,
   },
 ];
