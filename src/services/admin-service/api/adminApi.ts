@@ -1,21 +1,22 @@
 import { apiClient } from '../../../shared/configs/axiosConfig';
 import { ADMIN_ENDPOINTS } from './adminEndpoints';
-import type {
-  GetAdministratorDto,
-  CreateAdministratorDto,
-  GetUserDto,
-  SessionInfoDto,
-  InformationPageDto,
-  CreateInformationPageDto,
-  InformationTagDto,
-  CreateInformationTagDto,
-  NavigationMenuDto,
-  CreateNavigationMenuDto,
-  ConfigurationDto,
-  CreateConfigurationDto,
-  QuizzDto,
-  CreateQuizzDto,
-  AdminLogDto,
+import {
+  type GetAdministratorDto,
+  type CreateAdministratorDto,
+  type GetUserDto,
+  type SessionInfoDto,
+  type InformationPageDto,
+  type CreateInformationPageDto,
+  type InformationTagDto,
+  type CreateInformationTagDto,
+  type NavigationMenuDto,
+  type CreateNavigationMenuDto,
+  type ConfigurationDto,
+  type CreateConfigurationDto,
+  type QuizzDto,
+  type CreateQuizzDto,
+  type AdminLogDto,
+  type LineageDto,
 } from './adminTypes';
 
 export const adminApi = {
@@ -99,6 +100,8 @@ export const adminApi = {
       apiClient.get<AdminLogDto[]>(`${ADMIN_ENDPOINTS.logs}/administrator/${adminId}`),
     getByEntity: (entityType: string, entityId: string) =>
       apiClient.get<AdminLogDto[]>(`${ADMIN_ENDPOINTS.logs}/entity/${entityType}/${entityId}`),
+    getEntityLineage: (entityType: string, entityId: string) => 
+      apiClient.get<LineageDto>(`${ADMIN_ENDPOINTS.logs}/lineage/${entityType}/${entityId}`)
   },
 
   sessions: {

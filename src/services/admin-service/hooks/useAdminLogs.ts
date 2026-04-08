@@ -23,6 +23,20 @@ export function useAdminLogs() {
     }
   }, []);
 
+const fetchEntityLineage = useCallback(async (entityType: string, entityId: string) => {
+  setLoading(true);
+  try {
+    const response = await adminApi.logs.getEntityLineage(entityType, entityId);
+    return response.data; 
+  } catch (err: any) {
+    const message = err.response?.data?.error || 'Failed to fetch entity lineage';
+    setError(message);
+    showError(message);
+  } finally {
+    setLoading(false);
+  }
+}, []);
+
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
@@ -32,5 +46,6 @@ export function useAdminLogs() {
     loading,
     error,
     refresh: fetchAll,
+    fetchEntityLineage,
   };
 }
