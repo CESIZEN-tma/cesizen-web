@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Spinner } from './Spinner';
 import { EmptyState } from './EmptyState';
 import type { IconType } from 'react-icons';
-import { MdSearch } from 'react-icons/md';
+import { MdSearch, MdArrowUpward, MdArrowDownward, MdUnfoldMore } from 'react-icons/md';
 import './styles/datatable.css';
 
 export interface Column<T> {
@@ -10,6 +10,12 @@ export interface Column<T> {
   key: keyof T | string;
   render?: (value: any, row: T) => React.ReactNode;
   width?: string;
+  sortable?: boolean;
+}
+
+interface SortState {
+  key: string;
+  direction: 'asc' | 'desc';
 }
 
 interface DataTableProps<T> {
@@ -37,6 +43,26 @@ function scoreRow<T>(row: T, terms: string[]): number {
   return terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
 }
 
+function resolveValue<T>(row: T, key: string): unknown {
+  return key.includes('.')
+    ? key.split('.').reduce((obj: any, k) => obj?.[k], row)
+    : (row as any)[key];
+}
+
+function compareValues(a: unknown, b: unknown): number {
+  if (a === null || a === undefined) return 1;
+  if (b === null || b === undefined) return -1;
+  if (typeof a === 'string' && typeof b === 'string') {
+    const dateA = Date.parse(a);
+    const dateB = Date.parse(b);
+    if (!isNaN(dateA) && !isNaN(dateB)) return dateA - dateB;
+    return a.localeCompare(b, undefined, { sensitivity: 'base' });
+  }
+  if (typeof a === 'number' && typeof b === 'number') return a - b;
+  if (typeof a === 'boolean' && typeof b === 'boolean') return Number(a) - Number(b);
+  return String(a).localeCompare(String(b));
+}
+
 export function DataTable<T>({
   columns,
   data,
@@ -48,17 +74,39 @@ export function DataTable<T>({
   actions,
 }: DataTableProps<T>) {
   const [query, setQuery] = useState('');
+  const [sort, setSort] = useState<SortState | null>(null);
+
+  const handleSortClick = (key: string) => {
+    setSort((prev) => {
+      if (prev?.key !== key) return { key, direction: 'asc' };
+      return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+    });
+  };
 
   const filteredData = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
-    if (!trimmed) return data;
-    const terms = trimmed.split(/\s+/).filter(Boolean);
-    return data
-      .map((row) => ({ row, score: scoreRow(row, terms) }))
-      .filter(({ score }) => score > 0)
-      .sort((a, b) => b.score - a.score)
-      .map(({ row }) => row);
-  }, [data, query]);
+    let result = data;
+
+    if (trimmed) {
+      const terms = trimmed.split(/\s+/).filter(Boolean);
+      result = result
+        .map((row) => ({ row, score: scoreRow(row, terms) }))
+        .filter(({ score }) => score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(({ row }) => row);
+    }
+
+    if (sort) {
+      result = [...result].sort((a, b) => {
+        const valA = resolveValue(a, sort.key);
+        const valB = resolveValue(b, sort.key);
+        const cmp = compareValues(valA, valB);
+        return sort.direction === 'asc' ? cmp : -cmp;
+      });
+    }
+
+    return result;
+  }, [data, query, sort]);
 
   if (loading) {
     return <Spinner size="large" />;
@@ -85,11 +133,36 @@ export function DataTable<T>({
         <table className="datatable">
           <thead>
             <tr>
-              {columns.map((column, index) => (
-                <th key={index} style={{ width: column.width }}>
-                  {column.label}
-                </th>
-              ))}
+              {columns.map((column, index) => {
+                const key = String(column.key);
+                const isActive = sort?.key === key;
+                return (
+                  <th
+                    key={index}
+                    style={{ width: column.width }}
+                    className={column.sortable ? 'datatable-th-sortable' : undefined}
+                    onClick={column.sortable ? () => handleSortClick(key) : undefined}
+                    aria-sort={
+                      isActive ? (sort!.direction === 'asc' ? 'ascending' : 'descending') : undefined
+                    }
+                  >
+                    <span className="datatable-th-content">
+                      {column.label}
+                      {column.sortable && (
+                        <span className={`datatable-sort-icon${isActive ? ' datatable-sort-icon--active' : ''}`}>
+                          {isActive && sort!.direction === 'asc' ? (
+                            <MdArrowUpward size={14} />
+                          ) : isActive && sort!.direction === 'desc' ? (
+                            <MdArrowDownward size={14} />
+                          ) : (
+                            <MdUnfoldMore size={14} />
+                          )}
+                        </span>
+                      )}
+                    </span>
+                  </th>
+                );
+              })}
               {actions && <th style={{ width: 'auto' }}>Actions</th>}
             </tr>
           </thead>
@@ -107,17 +180,14 @@ export function DataTable<T>({
               filteredData.map((row) => (
                 <tr key={getRowKey(row)}>
                   {columns.map((column, colIndex) => {
-                    const value = typeof column.key === 'string' && column.key.includes('.')
-                      ? column.key.split('.').reduce((obj: any, key) => obj?.[key], row)
-                      : (row as any)[column.key];
-
+                    const value = resolveValue(row, String(column.key));
                     return (
                       <td key={colIndex}>
-                        {column.render ? column.render(value, row) : value}
+                        {column.render ? column.render(value, row) : (value as React.ReactNode)}
                       </td>
                     );
                   })}
-                  {actions && <td className="datatable-actions">{actions(row)}</td>}
+                  {actions && <td><div className="datatable-actions">{actions(row)}</div></td>}
                 </tr>
               ))
             )}

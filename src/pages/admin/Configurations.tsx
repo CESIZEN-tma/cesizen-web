@@ -13,6 +13,12 @@ import type { ConfigurationDto, CreateConfigurationDto } from '../../services/ad
 
 const Configurations: React.FC = () => {
   const { configurations, loading, create, update, delete: deleteConfig } = useConfigurations();
+
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleString('fr-FR', {
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedConfig, setSelectedConfig] = useState<ConfigurationDto | null>(null);
@@ -126,6 +132,12 @@ const Configurations: React.FC = () => {
       label: 'Guidance',
       key: 'guidanceType',
       render: (value: string) => <Badge variant="info">{value}</Badge>,
+    },
+    {
+      label: 'Created',
+      key: 'creationTime',
+      render: (value: string) => formatDate(value),
+      sortable: true,
     },
   ];
 

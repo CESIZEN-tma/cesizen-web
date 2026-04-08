@@ -115,6 +115,7 @@ const Administrators: React.FC = () => {
       label: 'Created',
       key: 'creationTime',
       render: (value: string) => formatDate(value),
+      sortable: true,
     },
   ];
 

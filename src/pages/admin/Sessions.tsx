@@ -60,11 +60,13 @@ const Sessions: React.FC = () => {
       label: 'Created',
       key: 'creationTime',
       render: (value: string) => formatDate(value),
+      sortable: true,
     },
     {
       label: 'Expires',
       key: 'expiresAt',
       render: (value: string) => formatDate(value),
+      sortable: true,
     },
     {
       label: 'Status',

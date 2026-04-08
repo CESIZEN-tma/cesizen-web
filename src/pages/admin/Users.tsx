@@ -85,6 +85,7 @@ const Users: React.FC = () => {
       label: 'Member Since',
       key: 'memberSince',
       render: (value: string) => formatDate(value),
+      sortable: true,
     },
     {
       label: 'Account',
