@@ -47,7 +47,7 @@ const LineageModal: React.FC<LineageModalProps> = ({ isOpen, onClose, entityType
       eds.map((edge) => ({
         ...edge,
         style: { stroke: edgeColor },
-        markerEnd: { ...(edge.markerEnd as object), color: edgeColor },
+        markerEnd: { type: MarkerType.ArrowClosed, width: 30, height: 30, color: edgeColor },
       })),
     );
   }, [theme]);
