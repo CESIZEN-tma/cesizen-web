@@ -37,6 +37,7 @@ jobs:
     name: Build & Push Docker image (preprod)
     needs: test
     runs-on: ubuntu-latest
+    environment: preprod
     permissions:
       contents: read
       packages: write
