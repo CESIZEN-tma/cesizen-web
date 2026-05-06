@@ -121,12 +121,12 @@ const Dashboard: React.FC = () => {
           lockedUsers: userList.filter((u) => u.lockedUntil && new Date(u.lockedUntil) > new Date()).length,
           totalAdmins: admins.data.length,
           totalPages: pages.data.length,
-          publishedPages: pages.data.filter((p: any) => p.status.toLowerCase() === 'published').length,
+          publishedPages: pages.data.filter((p: unknown) => (p as { status: string }).status.toLowerCase() === 'published').length,
           totalTags: tags.data.length,
           totalMenus: menus.data.length,
           totalConfigurations: configs.data.length,
           totalQuizzes: quizzes.data.length,
-          activeQuizzes: quizzes.data.filter((q: any) => q.active).length,
+          activeQuizzes: quizzes.data.filter((q: unknown) => (q as { active: boolean }).active).length,
           recentLogs: logList
             .sort((a, b) => new Date(b.creationTime).getTime() - new Date(a.creationTime).getTime())
             .slice(0, 8),

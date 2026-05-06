@@ -14,8 +14,8 @@ export function useInformationPages() {
     try {
       const response = await adminApi.pages.getAll();
       setPages(response.data);
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to fetch information pages';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch information pages';
       setError(message);
       showError(message);
     } finally {
@@ -28,8 +28,8 @@ export function useInformationPages() {
       await adminApi.pages.create(dto);
       showSuccess('Information page created successfully');
       await fetchAll();
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to create information page';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to create information page';
       showError(message);
       throw err;
     }
@@ -40,8 +40,8 @@ export function useInformationPages() {
       await adminApi.pages.update(id, dto);
       showSuccess('Information page updated successfully');
       await fetchAll();
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to update information page';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to update information page';
       showError(message);
       throw err;
     }
@@ -52,8 +52,8 @@ export function useInformationPages() {
       await adminApi.pages.delete(id);
       showSuccess('Information page deleted successfully');
       await fetchAll();
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to delete information page';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to delete information page';
       showError(message);
       throw err;
     }

@@ -8,7 +8,7 @@ import './styles/datatable.css';
 export interface Column<T> {
   label: string;
   key: keyof T | string;
-  render?: (value: any, row: T) => React.ReactNode;
+  render?: (value: unknown, row: T) => React.ReactNode;
   width?: string;
   sortable?: boolean;
 }
@@ -45,8 +45,8 @@ function scoreRow<T>(row: T, terms: string[]): number {
 
 function resolveValue<T>(row: T, key: string): unknown {
   return key.includes('.')
-    ? key.split('.').reduce((obj: any, k) => obj?.[k], row)
-    : (row as any)[key];
+    ? key.split('.').reduce((obj: unknown, k) => (obj as Record<string, unknown>)?.[k], row)
+    : (row as Record<string, unknown>)[key];
 }
 
 function compareValues(a: unknown, b: unknown): number {

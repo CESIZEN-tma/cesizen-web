@@ -14,8 +14,8 @@ export function useAdminSessions() {
     try {
       const response = await adminApi.sessions.getAll();
       setSessions(response.data);
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to fetch admin sessions';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch admin sessions';
       setError(message);
       showError(message);
     } finally {
@@ -29,8 +29,8 @@ export function useAdminSessions() {
         await adminApi.sessions.revoke(sessionId);
         showSuccess('Session revoked successfully');
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to revoke session';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to revoke session';
         showError(message);
         throw err;
       }
@@ -44,8 +44,8 @@ export function useAdminSessions() {
         await adminApi.sessions.revokeAll();
         showSuccess('All other sessions revoked successfully');
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to revoke all sessions';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to revoke all sessions';
         showError(message);
         throw err;
       }

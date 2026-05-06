@@ -14,8 +14,8 @@ export function useAdministrators() {
     try {
       const response = await adminApi.administrators.getAll();
       setAdministrators(response.data);
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to fetch administrators';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch administrators';
       setError(message);
       showError(message);
     } finally {
@@ -29,8 +29,8 @@ export function useAdministrators() {
         await adminApi.administrators.create(dto);
         showSuccess('Administrator created successfully');
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to create administrator';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to create administrator';
         showError(message);
         throw err;
       }
@@ -44,8 +44,8 @@ export function useAdministrators() {
         await adminApi.administrators.update(id, dto);
         showSuccess('Administrator updated successfully');
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to update administrator';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to update administrator';
         showError(message);
         throw err;
       }
@@ -59,8 +59,8 @@ export function useAdministrators() {
         await adminApi.administrators.delete(id);
         showSuccess('Administrator deleted successfully');
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to delete administrator';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to delete administrator';
         showError(message);
         throw err;
       }

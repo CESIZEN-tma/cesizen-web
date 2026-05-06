@@ -90,7 +90,7 @@ const Configurations: React.FC = () => {
         await create(formData);
       }
       setIsModalOpen(false);
-    } catch (err) {
+    } catch {
       // Error already handled by hook
     } finally {
       setFormLoading(false);
@@ -102,7 +102,7 @@ const Configurations: React.FC = () => {
     try {
       await deleteConfig(selectedConfig.id);
       setIsDeleteDialogOpen(false);
-    } catch (err) {
+    } catch {
       // Error already handled by hook
     }
   };
@@ -119,7 +119,7 @@ const Configurations: React.FC = () => {
     {
       label: 'Pattern',
       key: 'inhalation',
-      render: (_: any, row: ConfigurationDto) =>
+      render: (_: unknown, row: ConfigurationDto) =>
         `${row.inhalation}s - ${row.retention1}s - ${row.exhalation}s - ${row.retention2}s`,
     },
     { label: 'Duration (min)', key: 'durationMinutes' },

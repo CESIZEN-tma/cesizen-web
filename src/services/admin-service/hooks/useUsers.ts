@@ -14,8 +14,8 @@ export function useUsers() {
     try {
       const response = await adminApi.users.getAll();
       setUsers(response.data);
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to fetch users';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch users';
       setError(message);
       showError(message);
     } finally {
@@ -29,8 +29,8 @@ export function useUsers() {
         await adminApi.users.updateStatus(userId, active);
         showSuccess(`User ${active ? 'activated' : 'deactivated'} successfully`);
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to update user status';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to update user status';
         showError(message);
         throw err;
       }
@@ -42,8 +42,8 @@ export function useUsers() {
     try {
       const response = await adminApi.users.getSessions(userId);
       return response.data;
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to fetch user sessions';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch user sessions';
       showError(message);
       throw err;
     }
@@ -54,8 +54,8 @@ export function useUsers() {
       try {
         await adminApi.users.revokeSession(userId, sessionId);
         showSuccess('Session revoked successfully');
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to revoke session';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to revoke session';
         showError(message);
         throw err;
       }
@@ -68,8 +68,8 @@ export function useUsers() {
       try {
         await adminApi.users.revokeAllSessions(userId);
         showSuccess('All user sessions revoked successfully');
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to revoke all sessions';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to revoke all sessions';
         showError(message);
         throw err;
       }

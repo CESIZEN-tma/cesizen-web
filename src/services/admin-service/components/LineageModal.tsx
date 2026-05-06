@@ -100,8 +100,8 @@ const LineageModal: React.FC<LineageModalProps> = ({ isOpen, onClose, entityType
 
         setNodes(newNodes);
         setEdges(newEdges);
-      } catch (err: any) {
-        showError(err.response?.data?.error || 'Failed to fetch entity lineage');
+      } catch (err: unknown) {
+        showError((err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch entity lineage');
       } finally {
         setLoading(false);
       }

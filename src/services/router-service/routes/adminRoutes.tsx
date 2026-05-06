@@ -25,6 +25,7 @@ const Quizzes = lazy(() => import("../../../pages/admin/Quizzes"));
 const AdminLogs = lazy(() => import("../../../pages/admin/AdminLogs"));
 const Sessions = lazy(() => import("../../../pages/admin/Sessions"));
 
+// eslint-disable-next-line react-refresh/only-export-components
 const AdminPage: React.FC<{ component: React.ReactNode }> = ({ component }) => (
   <AdminGuard>
     <AdminLayout>

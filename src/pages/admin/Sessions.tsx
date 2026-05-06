@@ -18,7 +18,7 @@ const Sessions: React.FC = () => {
     try {
       await revoke(selectedSession.id);
       setIsRevokeDialogOpen(false);
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };
@@ -27,7 +27,7 @@ const Sessions: React.FC = () => {
     try {
       await revokeAll();
       setIsRevokeAllDialogOpen(false);
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };

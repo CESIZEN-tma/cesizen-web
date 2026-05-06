@@ -14,8 +14,8 @@ export function useInformationTags() {
     try {
       const response = await adminApi.tags.getAll();
       setTags(response.data);
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to fetch tags';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch tags';
       setError(message);
       showError(message);
     } finally {
@@ -29,8 +29,8 @@ export function useInformationTags() {
         await adminApi.tags.create(dto);
         showSuccess('Tag created successfully');
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to create tag';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to create tag';
         showError(message);
         throw err;
       }
@@ -44,8 +44,8 @@ export function useInformationTags() {
         await adminApi.tags.update(id, dto);
         showSuccess('Tag updated successfully');
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to update tag';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to update tag';
         showError(message);
         throw err;
       }
@@ -59,8 +59,8 @@ export function useInformationTags() {
         await adminApi.tags.delete(id);
         showSuccess('Tag deleted successfully');
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to delete tag';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to delete tag';
         showError(message);
         throw err;
       }

@@ -44,7 +44,7 @@ const InformationTags: React.FC = () => {
         await create({ label: tagName });
       }
       setIsModalOpen(false);
-    } catch (err) {
+    } catch {
       // Error already handled by hook
     } finally {
       setFormLoading(false);
@@ -56,7 +56,7 @@ const InformationTags: React.FC = () => {
     try {
       await deleteTag(selectedTag.id);
       setIsDeleteDialogOpen(false);
-    } catch (err) {
+    } catch {
       // Error already handled by hook
     }
   };

@@ -14,8 +14,8 @@ export function useAdminLogs() {
     try {
       const response = await adminApi.logs.getAll(filters);
       setLogs(response.data);
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to fetch admin logs';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch admin logs';
       setError(message);
       showError(message);
     } finally {
@@ -28,8 +28,8 @@ const fetchEntityLineage = useCallback(async (entityType: string, entityId: stri
   try {
     const response = await adminApi.logs.getEntityLineage(entityType, entityId);
     return response.data; 
-  } catch (err: any) {
-    const message = err.response?.data?.error || 'Failed to fetch entity lineage';
+  } catch (err: unknown) {
+    const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch entity lineage';
     setError(message);
     showError(message);
   } finally {

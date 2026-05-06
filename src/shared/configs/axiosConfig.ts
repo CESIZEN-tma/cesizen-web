@@ -42,8 +42,8 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
         return apiClient(originalRequest);
-      } catch (refreshError: any) {
-        console.error('[Auth] Refresh failed:', refreshError?.response?.status, refreshError?.response?.data);
+      } catch (refreshError: unknown) {
+        console.error('[Auth] Refresh failed:', (refreshError as { response?: { status?: number; data?: unknown } })?.response?.status, (refreshError as { response?: { status?: number; data?: unknown } })?.response?.data);
         localStorage.removeItem(TOKEN_KEY);
         window.location.href = '/login';
         return Promise.reject(error);

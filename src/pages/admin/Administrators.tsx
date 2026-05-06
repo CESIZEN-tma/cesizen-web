@@ -69,7 +69,7 @@ const Administrators: React.FC = () => {
         await create(formData as CreateAdministratorDto);
       }
       setIsModalOpen(false);
-    } catch (err) {
+    } catch {
       // Error already handled by hook
     } finally {
       setFormLoading(false);
@@ -81,7 +81,7 @@ const Administrators: React.FC = () => {
     try {
       await deleteAdmin(selectedAdmin.id);
       setIsDeleteDialogOpen(false);
-    } catch (err) {
+    } catch {
       // Error already handled by hook
     }
   };

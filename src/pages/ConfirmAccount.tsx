@@ -27,8 +27,8 @@ const ConfirmAccount: React.FC = () => {
     try {
       await apiClient.put(`/admin/confirm-account/${encodeURIComponent(trimmed)}`);
       navigate('/login');
-    } catch (err: any) {
-      const message = err.response?.data?.error ?? 'Token invalide ou expiré.';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? 'Token invalide ou expiré.';
       showError(message);
     } finally {
       setLoading(false);

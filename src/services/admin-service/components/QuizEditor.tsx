@@ -403,7 +403,7 @@ export const QuizEditor: React.FC<QuizEditorProps> = ({
       };
 
       await onSave(quizDto);
-    } catch (err) {
+    } catch {
       // Error handled by parent
     } finally {
       setSaving(false);

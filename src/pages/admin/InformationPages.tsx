@@ -80,7 +80,7 @@ const InformationPages: React.FC = () => {
         await create(formData);
       }
       setIsModalOpen(false);
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };
@@ -90,7 +90,7 @@ const InformationPages: React.FC = () => {
     try {
       await deletePage(selectedPage.id);
       setIsDeleteDialogOpen(false);
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };

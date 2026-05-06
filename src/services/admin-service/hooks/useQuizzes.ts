@@ -14,8 +14,8 @@ export function useQuizzes() {
     try {
       const response = await adminApi.quizzes.getAll();
       setQuizzes(response.data);
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to fetch quizzes';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch quizzes';
       setError(message);
       showError(message);
     } finally {
@@ -27,8 +27,8 @@ export function useQuizzes() {
     try {
       const response = await adminApi.quizzes.getById(id);
       return response.data;
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to fetch quiz details';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch quiz details';
       showError(message);
       return null;
     }
@@ -39,8 +39,8 @@ export function useQuizzes() {
       await adminApi.quizzes.create(dto);
       showSuccess('Quiz created successfully');
       await fetchAll();
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to create quiz';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to create quiz';
       showError(message);
       throw err;
     }
@@ -51,8 +51,8 @@ export function useQuizzes() {
       await adminApi.quizzes.update(id, dto);
       showSuccess('Quiz updated successfully');
       await fetchAll();
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to update quiz';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to update quiz';
       showError(message);
       throw err;
     }
@@ -63,8 +63,8 @@ export function useQuizzes() {
       await adminApi.quizzes.updateFull(id, dto);
       showSuccess('Quiz updated successfully');
       await fetchAll();
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to update quiz';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to update quiz';
       showError(message);
       throw err;
     }
@@ -75,8 +75,8 @@ export function useQuizzes() {
       await adminApi.quizzes.delete(id);
       showSuccess('Quiz deleted successfully');
       await fetchAll();
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to delete quiz';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to delete quiz';
       showError(message);
       throw err;
     }
@@ -87,8 +87,8 @@ export function useQuizzes() {
       await adminApi.quizzes.setActive(id, active);
       showSuccess(active ? 'Quiz activé' : 'Quiz désactivé');
       await fetchAll();
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to update quiz status';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to update quiz status';
       showError(message);
       throw err;
     }

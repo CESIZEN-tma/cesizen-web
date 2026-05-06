@@ -30,7 +30,7 @@ const Users: React.FC = () => {
     try {
       const sessions = await getUserSessions(user.id);
       setUserSessions(sessions);
-    } catch (err) {
+    } catch {
       // Error handled by hook
     } finally {
       setSessionsLoading(false);
@@ -40,7 +40,7 @@ const Users: React.FC = () => {
   const handleToggleStatus = async (user: GetUserDto) => {
     try {
       await updateStatus(user.id, !user.active);
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };
@@ -51,7 +51,7 @@ const Users: React.FC = () => {
       await revokeSession(selectedUser.id, sessionId);
       const updatedSessions = await getUserSessions(selectedUser.id);
       setUserSessions(updatedSessions);
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };
@@ -62,7 +62,7 @@ const Users: React.FC = () => {
       await revokeAllSessions(selectedUser.id);
       setIsRevokeAllDialogOpen(false);
       setIsSessionsModalOpen(false);
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };

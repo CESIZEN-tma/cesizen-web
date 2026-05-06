@@ -54,16 +54,12 @@ const Quizzes: React.FC = () => {
   };
 
   const handleSave = async (quizData: CreateQuizzDto) => {
-    try {
-      if (selectedQuiz) {
-        await updateFull(selectedQuiz.id, quizData);
-      } else {
-        await create(quizData);
-      }
-      setIsEditorOpen(false);
-    } catch (err) {
-      throw err;
+    if (selectedQuiz) {
+      await updateFull(selectedQuiz.id, quizData);
+    } else {
+      await create(quizData);
     }
+    setIsEditorOpen(false);
   };
 
   const handleConfirmDelete = async () => {
@@ -71,7 +67,7 @@ const Quizzes: React.FC = () => {
     try {
       await deleteQuiz(selectedQuiz.id);
       setIsDeleteDialogOpen(false);
-    } catch (err) {
+    } catch {
       // Error handled by hook
     }
   };

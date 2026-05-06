@@ -14,8 +14,8 @@ export function useConfigurations() {
     try {
       const response = await adminApi.configurations.getAll();
       setConfigurations(response.data);
-    } catch (err: any) {
-      const message = err.response?.data?.error || 'Failed to fetch configurations';
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to fetch configurations';
       setError(message);
       showError(message);
     } finally {
@@ -29,8 +29,8 @@ export function useConfigurations() {
         await adminApi.configurations.create(dto);
         showSuccess('Configuration created successfully');
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to create configuration';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to create configuration';
         showError(message);
         throw err;
       }
@@ -44,8 +44,8 @@ export function useConfigurations() {
         await adminApi.configurations.update(id, dto);
         showSuccess('Configuration updated successfully');
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to update configuration';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to update configuration';
         showError(message);
         throw err;
       }
@@ -59,8 +59,8 @@ export function useConfigurations() {
         await adminApi.configurations.delete(id);
         showSuccess('Configuration deleted successfully');
         await fetchAll();
-      } catch (err: any) {
-        const message = err.response?.data?.error || 'Failed to delete configuration';
+      } catch (err: unknown) {
+        const message = (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Failed to delete configuration';
         showError(message);
         throw err;
       }
