@@ -8,7 +8,8 @@ import './styles/datatable.css';
 export interface Column<T> {
   label: string;
   key: keyof T | string;
-  render?: (value: unknown, row: T) => React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  render?: (value: any, row: T) => React.ReactNode;
   width?: string;
   sortable?: boolean;
 }
